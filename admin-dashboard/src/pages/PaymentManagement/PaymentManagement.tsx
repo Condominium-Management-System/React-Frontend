@@ -1,8 +1,10 @@
 const PaymentManagement = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800">Payment Management</h1>
-      <p className="mt-2 text-gray-600">Payment Management placeholder.</p>
+    <div className="rounded-xl border border-gray-800/80 bg-[#0F131C] p-6 shadow-sm">
+      <h2 className="text-xl font-semibold text-gray-100">Payment Management Placeholder</h2>
+      <p className="mt-2 text-sm text-gray-400">
+        Payment Management will be implemented in a later phase.
+      </p>
     </div>
   )
 }
