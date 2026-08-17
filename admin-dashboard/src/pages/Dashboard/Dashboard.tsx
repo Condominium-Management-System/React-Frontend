@@ -1,9 +1,9 @@
 const Dashboard = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-      <p className="mt-2 text-gray-600">
-        Phase 1 foundation is working. Do NOT build the actual dashboard yet.
+    <div className="rounded-xl border border-gray-800/80 bg-[#0F131C] p-6 shadow-sm">
+      <h2 className="text-xl font-semibold text-gray-100">Dashboard Placeholder</h2>
+      <p className="mt-2 text-sm text-gray-400">
+        Dashboard content will be implemented in Phase 3.
       </p>
     </div>
   )
