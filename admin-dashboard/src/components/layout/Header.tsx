@@ -53,7 +53,7 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
             type="text"
             placeholder="Search terminal..."
             readOnly
-            className="w-full rounded-lg border border-gray-800 bg-gray-900/80 py-1.5 pl-9 pr-3 text-xs text-gray-200 placeholder-gray-500 transition-colors focus:border-amber-500/50 focus:outline-none"
+            className="w-full rounded-lg border border-gray-800 bg-gray-900/80 py-1.5 pl-9 pr-3 text-xs text-gray-200 placeholder-gray-500 transition-colors focus:border-[#D3AD32]/50 focus:outline-none"
           />
         </div>
 
@@ -64,16 +64,16 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
           className="relative rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 focus:outline-none"
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-[#0F131C]" />
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#D3AD32] ring-2 ring-[#0F131C]" />
         </button>
 
         {/* Super Admin User Area */}
         <div className="flex items-center gap-2 border-l border-gray-800 pl-3 md:pl-5">
           <div className="hidden text-right lg:block">
             <p className="text-xs font-semibold text-gray-200">Super Admin</p>
-            <p className="text-[10px] text-amber-500">Console Mode</p>
+            <p className="text-[10px] text-[#D3AD32]">Console Mode</p>
           </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/10 font-bold text-amber-400 text-xs shadow-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D3AD32]/40 bg-[#D3AD32]/10 font-bold text-[#D3AD32] text-xs shadow-sm">
             SA
           </div>
         </div>

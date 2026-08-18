@@ -19,7 +19,7 @@ export const StatCard = ({
         <span className="text-xs font-semibold tracking-wide text-gray-400 uppercase">
           {title}
         </span>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 shadow-sm">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#D3AD32]/30 bg-[#D3AD32]/10 text-[#D3AD32] shadow-sm">
           <Icon className="h-5 w-5" />
         </div>
       </div>
@@ -29,7 +29,7 @@ export const StatCard = ({
           {value}
         </span>
         {badgeText && (
-          <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-amber-400">
+          <span className="rounded-full border border-[#D3AD32]/30 bg-[#D3AD32]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#D3AD32]">
             {badgeText}
           </span>
         )}
