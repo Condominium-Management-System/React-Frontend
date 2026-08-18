@@ -32,8 +32,8 @@ export const PlaceholderCard = ({
             {description && <p className="text-xs text-gray-400">{description}</p>}
           </div>
         </div>
-        <span className="rounded-full border border-gray-700 bg-gray-900 px-2.5 py-0.5 text-[11px] font-semibold text-gray-400">
-          Placeholder
+        <span className="rounded-full border border-gray-800 bg-gray-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-gray-400">
+          Coming Soon
         </span>
       </div>
 

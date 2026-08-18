@@ -20,7 +20,7 @@ export const QuickActionCard = ({
     <button
       type="button"
       onClick={onClick}
-      className={`group flex w-full flex-col justify-between rounded-xl border border-gray-800/80 bg-[#0F131C] p-5 text-left shadow-sm transition-all duration-200 ${
+      className={`group flex w-full flex-col justify-between rounded-xl border border-gray-800/80 bg-[#0F131C] p-5 text-left shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#D3AD32] focus:ring-offset-2 focus:ring-offset-[#090D16] ${
         isPlaceholder
           ? 'cursor-default opacity-85 hover:border-gray-800'
           : 'hover:-translate-y-0.5 hover:border-[#D3AD32]/50 hover:bg-[#131926] hover:shadow-md'
