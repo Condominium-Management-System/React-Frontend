@@ -24,7 +24,7 @@ export const PlaceholderCard = ({
     >
       <div className="flex items-center justify-between border-b border-gray-800/80 pb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#D3AD32]/30 bg-[#D3AD32]/10 text-[#D3AD32]">
             <Icon className="h-5 w-5" />
           </div>
           <div>

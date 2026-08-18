@@ -23,11 +23,11 @@ export const QuickActionCard = ({
       className={`group flex w-full flex-col justify-between rounded-xl border border-gray-800/80 bg-[#0F131C] p-5 text-left shadow-sm transition-all duration-200 ${
         isPlaceholder
           ? 'cursor-default opacity-85 hover:border-gray-800'
-          : 'hover:-translate-y-0.5 hover:border-amber-500/50 hover:bg-[#131926] hover:shadow-md'
+          : 'hover:-translate-y-0.5 hover:border-[#D3AD32]/50 hover:bg-[#131926] hover:shadow-md'
       }`}
     >
       <div className="flex items-center justify-between w-full">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 shadow-sm transition-colors group-hover:border-amber-500/50 group-hover:bg-amber-500/20">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#D3AD32]/30 bg-[#D3AD32]/10 text-[#D3AD32] shadow-sm transition-colors group-hover:border-[#D3AD32]/50 group-hover:bg-[#D3AD32]/20">
           <Icon className="h-5 w-5" />
         </div>
         {isPlaceholder ? (
@@ -35,14 +35,14 @@ export const QuickActionCard = ({
             Coming Soon
           </span>
         ) : (
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors group-hover:bg-amber-500 group-hover:text-gray-950">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-800/80 text-gray-400 transition-colors group-hover:bg-[#D3AD32] group-hover:text-gray-950">
             <ArrowRight className="h-4 w-4" />
           </div>
         )}
       </div>
 
       <div className="mt-4">
-        <h4 className="text-base font-bold text-gray-100 transition-colors group-hover:text-amber-400">
+        <h4 className="text-base font-bold text-gray-100 transition-colors group-hover:text-[#D3AD32]">
           {title}
         </h4>
         <p className="mt-1 text-xs text-gray-400 line-clamp-2">{description}</p>

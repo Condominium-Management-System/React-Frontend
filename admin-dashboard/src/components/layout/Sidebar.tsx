@@ -48,14 +48,14 @@ export const Sidebar = ({
       {/* Branding Section */}
       <div className="flex items-center justify-between border-b border-gray-800/80 p-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 shadow-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#D3AD32]/30 bg-[#D3AD32]/10 text-[#D3AD32] shadow-sm">
             <Building2 className="h-6 w-6" />
           </div>
           <div>
             <h1 className="font-extrabold text-lg leading-none tracking-wider text-gray-100">
-              HOME<span className="text-amber-500">AXIS</span>
+              HOME<span className="text-[#D3AD32]">AXIS</span>
             </h1>
-            <span className="mt-1 block font-semibold text-[10px] tracking-widest text-amber-500/80 uppercase">
+            <span className="mt-1 block font-semibold text-[10px] tracking-widest text-[#D3AD32]/80 uppercase">
               PREMIUM CONSOLE
             </span>
           </div>
@@ -88,7 +88,7 @@ export const Sidebar = ({
               className={({ isActive }) =>
                 `group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                   isActive
-                    ? 'border-l-4 border-amber-500 bg-amber-500/10 text-amber-400 shadow-sm'
+                    ? 'border-l-4 border-[#D3AD32] bg-[#D3AD32]/10 text-[#D3AD32] shadow-sm'
                     : 'text-gray-400 hover:bg-gray-800/60 hover:text-gray-200'
                 }`
               }
@@ -97,7 +97,7 @@ export const Sidebar = ({
                 <>
                   <Icon
                     className={`h-5 w-5 shrink-0 transition-colors ${
-                      isActive ? 'text-amber-400' : 'text-gray-400 group-hover:text-gray-200'
+                      isActive ? 'text-[#D3AD32]' : 'text-gray-400 group-hover:text-gray-200'
                     }`}
                   />
                   <span className="truncate">{item.name}</span>
@@ -114,7 +114,7 @@ export const Sidebar = ({
 
         <button
           type="button"
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-800 bg-gray-900/60 py-2 text-xs font-medium text-gray-400 transition-colors hover:border-gray-700 hover:bg-gray-800 hover:text-amber-400 focus:outline-none"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-800 bg-gray-900/60 py-2 text-xs font-medium text-gray-400 transition-colors hover:border-gray-700 hover:bg-gray-800 hover:text-[#D3AD32] focus:outline-none"
         >
           <LogOut className="h-4 w-4" />
           <span>Logout Console</span>

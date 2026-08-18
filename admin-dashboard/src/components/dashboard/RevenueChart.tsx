@@ -51,7 +51,7 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
           <p className="text-xs text-gray-400">Monthly revenue overview across network</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#D3AD32]" />
           <span className="text-xs font-semibold text-gray-300">Revenue ($)</span>
         </div>
       </div>
@@ -63,8 +63,8 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
         >
           <defs>
             <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#D3AD32" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#D3AD32" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
@@ -104,7 +104,7 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
           <path
             d={linePath}
             fill="none"
-            stroke="#F59E0B"
+            stroke="#D3AD32"
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -123,7 +123,7 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
                 <text
                   x={point.x}
                   y={height - 10}
-                  fill={isHovered ? '#F59E0B' : '#9CA3AF'}
+                  fill={isHovered ? '#D3AD32' : '#9CA3AF'}
                   fontSize="11"
                   fontWeight={isHovered ? '700' : '500'}
                   textAnchor="middle"
@@ -137,7 +137,7 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
                   cy={point.y}
                   r={isHovered ? '6' : '4'}
                   fill="#0F131C"
-                  stroke="#F59E0B"
+                  stroke="#D3AD32"
                   strokeWidth="2.5"
                   className="transition-all duration-150"
                 />
@@ -152,7 +152,7 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
                       height="26"
                       rx="6"
                       fill="#1F2937"
-                      stroke="#F59E0B"
+                      stroke="#D3AD32"
                       strokeWidth="1"
                     />
                     <text

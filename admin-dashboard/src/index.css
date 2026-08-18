@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --color-gold: #D3AD32;
+}
+
 *,
 *::before,
 *::after {
@@ -19,4 +23,5 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 

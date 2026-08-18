@@ -4,8 +4,6 @@ import {
   Users,
   CreditCard,
   Clock,
-  FileText,
-  Sliders,
   Activity,
 } from 'lucide-react'
 import { mockDashboardData } from './dashboardMockData'
@@ -95,16 +93,16 @@ export const Dashboard = () => {
             onClick={() => navigate('/users')}
           />
           <QuickActionCard
-            title="Export Reports"
-            description="Generate system audit reports and financial summaries."
-            icon={FileText}
-            isPlaceholder
+            title="Condo Management"
+            description="Manage condominium properties, unit structures, and complex details."
+            icon={Building2}
+            onClick={() => navigate('/condos')}
           />
           <QuickActionCard
-            title="System Settings"
-            description="Configure platform settings, notification preferences, and global parameters."
-            icon={Sliders}
-            isPlaceholder
+            title="Payment Management"
+            description="Track dues, payment records, billing histories, and financial transactions."
+            icon={CreditCard}
+            onClick={() => navigate('/payments')}
           />
         </div>
       </div>
