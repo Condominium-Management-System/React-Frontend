@@ -143,30 +143,51 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
                 />
 
                 {/* Tooltip on Hover */}
-                {isHovered && (
-                  <g>
-                    <rect
-                      x={point.x - 45}
-                      y={point.y - 38}
-                      width="90"
-                      height="26"
-                      rx="6"
-                      fill="#1F2937"
-                      stroke="#D3AD32"
-                      strokeWidth="1"
-                    />
-                    <text
-                      x={point.x}
-                      y={point.y - 21}
-                      fill="#F9FAFB"
-                      fontSize="11"
-                      fontWeight="bold"
-                      textAnchor="middle"
-                    >
-                      ${point.amount.toLocaleString()}
-                    </text>
-                  </g>
-                )}
+                {isHovered && (() => {
+                  const tooltipWidth = 125
+                  const tooltipHeight = 40
+                  let rectX = point.x - tooltipWidth / 2
+                  if (rectX < 10) rectX = 10
+                  if (rectX + tooltipWidth > width - 10) rectX = width - 10 - tooltipWidth
+                  let rectY = point.y - tooltipHeight - 10
+                  if (rectY < 5) rectY = point.y + 12
+
+                  return (
+                    <g className="pointer-events-none">
+                      <rect
+                        x={rectX}
+                        y={rectY}
+                        width={tooltipWidth}
+                        height={tooltipHeight}
+                        rx="6"
+                        fill="#0F131C"
+                        stroke="#D3AD32"
+                        strokeWidth="1.5"
+                        className="shadow-lg"
+                      />
+                      <text
+                        x={rectX + tooltipWidth / 2}
+                        y={rectY + 15}
+                        fill="#9CA3AF"
+                        fontSize="10"
+                        fontWeight="600"
+                        textAnchor="middle"
+                      >
+                        Month: {point.month}
+                      </text>
+                      <text
+                        x={rectX + tooltipWidth / 2}
+                        y={rectY + 30}
+                        fill="#F9FAFB"
+                        fontSize="11"
+                        fontWeight="bold"
+                        textAnchor="middle"
+                      >
+                        Revenue: ${point.amount.toLocaleString()}
+                      </text>
+                    </g>
+                  )
+                })()}
               </g>
             )
           })}
