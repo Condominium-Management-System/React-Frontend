@@ -1,3 +1,5 @@
+import { useAuth } from '../../context/useAuth'
+
 interface UserProfileProps {
   name?: string
   role?: string
@@ -5,19 +7,37 @@ interface UserProfileProps {
 }
 
 export const UserProfile = ({
-  name = 'Solomon Degefe',
-  role = 'Platform Supervisor',
+  name,
+  role,
   className = '',
 }: UserProfileProps) => {
+  const { user } = useAuth()
+
+  const displayName = name || user?.fullName || 'Solomon Degefe'
+  const displayRole = role || user?.role || 'Platform Supervisor'
+
+  // Generate initials dynamically (e.g. "Solomon Degefe" -> "SD")
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase() || 'SD'
+
   return (
     <div className={`flex items-center gap-3 rounded-lg p-2 ${className}`}>
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D3AD32]/30 bg-[#D3AD32]/10 font-bold text-[#D3AD32] text-sm">
-        SD
+      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D3AD32]/30 bg-[#D3AD32]/10 font-bold text-[#D3AD32] text-sm">
+        {initials}
         <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-gray-900" />
       </div>
       <div className="min-w-0 flex-1">
-        <h4 className="truncate text-sm font-semibold text-gray-100">{name}</h4>
-        <p className="truncate text-xs text-gray-400">{role}</p>
+        <h4 className="truncate text-sm font-semibold text-gray-100">
+          {displayName}
+        </h4>
+        <p className="truncate text-xs text-gray-400 capitalize">
+          {displayRole}
+        </p>
       </div>
     </div>
   )

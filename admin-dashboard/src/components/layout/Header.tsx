@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom'
 import { Search, Bell, Menu } from 'lucide-react'
+import { useAuth } from '../../context/useAuth'
 
 interface HeaderProps {
   title?: string
@@ -23,7 +24,18 @@ const getPageTitle = (pathname: string): string => {
 
 export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
   const location = useLocation()
+  const { user } = useAuth()
   const displayTitle = title || getPageTitle(location.pathname)
+
+  const displayName = user?.fullName || 'Super Admin'
+  const displayRole = user?.role || 'Console Mode'
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase() || 'SA'
 
   return (
     <header className="flex h-16 w-full items-center justify-between border-b border-gray-800/80 bg-[#0F131C] px-4 md:px-6 text-gray-200 select-none">
@@ -70,11 +82,11 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
         {/* Super Admin User Area */}
         <div className="flex items-center gap-2 border-l border-gray-800 pl-3 md:pl-5">
           <div className="hidden text-right lg:block">
-            <p className="text-xs font-semibold text-gray-200">Super Admin</p>
-            <p className="text-[10px] text-[#D3AD32]">Console Mode</p>
+            <p className="text-xs font-semibold text-gray-200">{displayName}</p>
+            <p className="text-[10px] text-[#D3AD32] capitalize">{displayRole}</p>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D3AD32]/40 bg-[#D3AD32]/10 font-bold text-[#D3AD32] text-xs shadow-sm">
-            SA
+            {initials}
           </div>
         </div>
       </div>
