@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Building2,
@@ -8,6 +8,7 @@ import {
   X,
 } from 'lucide-react'
 import UserProfile from './UserProfile'
+import { useAuth } from '../../context/useAuth'
 
 interface SidebarProps {
   onNavClick?: () => void
@@ -43,6 +44,17 @@ export const Sidebar = ({
   onCloseMobile,
   isMobile = false,
 }: SidebarProps) => {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } finally {
+      navigate('/login', { replace: true })
+    }
+  }
+
   return (
     <aside className="flex h-full w-64 flex-col border-r border-gray-800/80 bg-[#0F131C] text-gray-200 select-none">
       {/* Branding Section */}
@@ -114,7 +126,8 @@ export const Sidebar = ({
 
         <button
           type="button"
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-800 bg-gray-900/60 py-2 text-xs font-medium text-gray-400 transition-colors hover:border-gray-700 hover:bg-gray-800 hover:text-[#D3AD32] focus:outline-none"
+          onClick={handleLogout}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-800 bg-gray-900/60 py-2 text-xs font-medium text-gray-400 transition-colors hover:border-gray-700 hover:bg-gray-800 hover:text-[#D3AD32] focus:outline-none cursor-pointer"
         >
           <LogOut className="h-4 w-4" />
           <span>Logout Console</span>
