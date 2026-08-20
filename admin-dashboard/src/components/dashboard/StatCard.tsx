@@ -5,6 +5,7 @@ interface StatCardProps {
   value: string | number
   icon: LucideIcon
   badgeText?: string
+  subtext?: string
 }
 
 export const StatCard = ({
@@ -12,6 +13,7 @@ export const StatCard = ({
   value,
   icon: Icon,
   badgeText,
+  subtext,
 }: StatCardProps) => {
   return (
     <div className="flex flex-col justify-between rounded-xl border border-gray-800/80 bg-[#0F131C] p-5 shadow-sm transition-colors hover:border-gray-700/80">
@@ -34,6 +36,12 @@ export const StatCard = ({
           </span>
         )}
       </div>
+
+      {subtext && (
+        <div className="mt-2 text-[11px] text-gray-400 border-t border-gray-800/60 pt-2 font-medium">
+          {subtext}
+        </div>
+      )}
     </div>
   )
 }

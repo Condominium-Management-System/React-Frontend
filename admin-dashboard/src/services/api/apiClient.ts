@@ -4,6 +4,7 @@ import type {
   LoginResponse,
   User,
 } from '../types/auth'
+import type { DashboardData } from '../types/dashboard'
 
 const STORAGE_KEY = 'homeaxis_auth_session'
 
@@ -219,4 +220,19 @@ export const updateProfileApi = async (formData: FormData): Promise<User> => {
   }
 
   return updatedUser
+}
+
+// 7. Get Dashboard Endpoint (GET /api/admin/dashboard)
+export const getDashboardApi = async (): Promise<DashboardData> => {
+  const response = await fetchWithAuth('/api/admin/dashboard', {
+    method: 'GET',
+  })
+
+  const json = await response.json()
+
+  if (!response.ok || !json.success) {
+    throw new Error(json.message || 'Unable to load dashboard data.')
+  }
+
+  return json.data as DashboardData
 }
