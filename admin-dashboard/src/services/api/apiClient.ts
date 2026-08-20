@@ -10,6 +10,7 @@ import type {
   CreateCondoPayload,
   UpdateCondoPayload,
 } from '../types/condo'
+import type { CreateUserPayload } from '../types/user'
 
 const STORAGE_KEY = 'homeaxis_auth_session'
 
@@ -310,4 +311,43 @@ export const deleteCondoApi = async (id: string): Promise<void> => {
     const json = await response.json().catch(() => ({}))
     throw new Error(json.message || 'Failed to delete condominium.')
   }
+}
+
+// 12. Get Users Endpoint (GET /api/users)
+export const getUsersApi = async (): Promise<User[]> => {
+  const response = await fetchWithAuth('/api/users', {
+    method: 'GET',
+  })
+
+  const json = await response.json()
+
+  if (!response.ok || !json.success) {
+    throw new Error(json.message || 'Failed to load users.')
+  }
+
+  const userList = Array.isArray(json.data)
+    ? json.data
+    : Array.isArray(json)
+    ? json
+    : []
+
+  return userList as User[]
+}
+
+// 13. Create User Endpoint (POST /api/users)
+export const createUserApi = async (
+  payload: CreateUserPayload
+): Promise<User> => {
+  const response = await fetchWithAuth('/api/users', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok || !json.success) {
+    throw new Error(json.message || 'Failed to create user.')
+  }
+
+  return (json.data || json) as User
 }
