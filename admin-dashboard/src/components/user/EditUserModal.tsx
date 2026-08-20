@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { X, Pencil, AlertCircle } from 'lucide-react'
 import type { User } from '../../services/types/auth'
+import type { UpdateUserPayload } from '../../services/types/user'
+import { updateUserApi, updateUserRoleApi } from '../../services/api/apiClient'
 
 interface EditUserModalProps {
   isOpen: boolean
@@ -13,13 +15,16 @@ export const EditUserModal = ({
   isOpen,
   user,
   onClose,
+  onSuccess,
 }: EditUserModalProps) => {
   const [fullName, setFullName] = useState(user.fullName || '')
   const [email, setEmail] = useState(user.email || '')
   const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || '')
   const [fan, setFan] = useState(user.fan || '')
-  const [condoCode, setCondoCode] = useState(user.condoCode || '')
+  const [role, setRole] = useState(user.role || 'resident')
+  const [isVerified, setIsVerified] = useState<boolean>(user.isVerified ?? true)
 
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -27,15 +32,61 @@ export const EditUserModal = ({
     setEmail(user.email || '')
     setPhoneNumber(user.phoneNumber || '')
     setFan(user.fan || '')
-    setCondoCode(user.condoCode || '')
+    setRole(user.role || 'resident')
+    setIsVerified(user.isVerified ?? true)
   }, [user])
 
   if (!isOpen) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Backend PATCH contract pending - clear notification and report contract isolation
-    setErrorMessage('User edit PATCH endpoint is pending backend contract definition.')
+    setErrorMessage(null)
+
+    if (!fullName.trim() || !email.trim() || !phoneNumber.trim()) {
+      setErrorMessage('Please fill in all required fields.')
+      return
+    }
+
+    const userId = user.id
+    const condoId = user.condoId || user.condoCode || '550e8400-e29b-41d4-a716-446655440001'
+
+    try {
+      setIsSubmitting(true)
+
+      // 1. Check if normal fields changed
+      const normalChanged =
+        fullName.trim() !== (user.fullName || '') ||
+        email.trim() !== (user.email || '') ||
+        phoneNumber.trim() !== (user.phoneNumber || '') ||
+        fan.trim() !== (user.fan || '') ||
+        isVerified !== (user.isVerified ?? true)
+
+      if (normalChanged) {
+        const payload: UpdateUserPayload = {
+          fullName: fullName.trim(),
+          email: email.trim(),
+          phoneNumber: phoneNumber.trim(),
+          fan: fan.trim(),
+          isVerified,
+        }
+        await updateUserApi(condoId, userId, payload)
+      }
+
+      // 2. Check if role changed
+      const roleChanged = role !== user.role
+
+      if (roleChanged) {
+        await updateUserRoleApi(condoId, userId, role)
+      }
+
+      onSuccess()
+      onClose()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to update user.'
+      setErrorMessage(msg)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -70,7 +121,7 @@ export const EditUserModal = ({
         </div>
 
         {errorMessage && (
-          <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-400">
+          <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -121,30 +172,46 @@ export const EditUserModal = ({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-xs font-semibold text-gray-300">
-                FAN Number
+                System Role
               </label>
-              <input
-                type="text"
-                required
-                maxLength={16}
-                value={fan}
-                onChange={(e) => setFan(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-gray-200 focus:border-[#D3AD32] focus:outline-none font-mono"
-              />
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-gray-200 focus:border-[#D3AD32] focus:outline-none"
+              >
+                <option value="resident">Resident</option>
+                <option value="guard">Guard</option>
+                <option value="condo_admin">Condo Admin</option>
+                <option value="super_admin">Super Admin</option>
+              </select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-300">
-                Condo Code
+                Verification Status
               </label>
-              <input
-                type="text"
-                required
-                value={condoCode}
-                onChange={(e) => setCondoCode(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-gray-200 focus:border-[#D3AD32] focus:outline-none font-mono"
-              />
+              <select
+                value={isVerified ? 'true' : 'false'}
+                onChange={(e) => setIsVerified(e.target.value === 'true')}
+                className="mt-1 w-full rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-gray-200 focus:border-[#D3AD32] focus:outline-none"
+              >
+                <option value="true">Active (Verified)</option>
+                <option value="false">Pending (Unverified)</option>
+              </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-300">
+              FAN Number
+            </label>
+            <input
+              type="text"
+              maxLength={16}
+              value={fan}
+              onChange={(e) => setFan(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-gray-200 focus:border-[#D3AD32] focus:outline-none font-mono"
+            />
           </div>
 
           <div className="mt-6 flex items-center justify-end gap-3 border-t border-gray-800 pt-4">
@@ -157,9 +224,10 @@ export const EditUserModal = ({
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-[#D3AD32] px-4 py-2 text-xs font-bold text-gray-950 transition-colors hover:bg-[#E4C043] cursor-pointer"
+              disabled={isSubmitting}
+              className="rounded-lg bg-[#D3AD32] px-4 py-2 text-xs font-bold text-gray-950 transition-colors hover:bg-[#E4C043] disabled:opacity-60 cursor-pointer"
             >
-              Save Changes
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>

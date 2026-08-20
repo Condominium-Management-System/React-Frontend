@@ -10,7 +10,7 @@ import type {
   CreateCondoPayload,
   UpdateCondoPayload,
 } from '../types/condo'
-import type { CreateUserPayload } from '../types/user'
+import type { CreateUserPayload, UpdateUserPayload } from '../types/user'
 
 const STORAGE_KEY = 'homeaxis_auth_session'
 
@@ -334,11 +334,11 @@ export const getUsersApi = async (): Promise<User[]> => {
   return userList as User[]
 }
 
-// 13. Create User Endpoint (POST /api/users)
+// 13. Create User Endpoint (POST /api/auth/register)
 export const createUserApi = async (
   payload: CreateUserPayload
 ): Promise<User> => {
-  const response = await fetchWithAuth('/api/users', {
+  const response = await fetchWithAuth('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -349,5 +349,60 @@ export const createUserApi = async (
     throw new Error(json.message || 'Failed to create user.')
   }
 
-  return (json.data || json) as User
+  return (json.data?.user || json.data || json) as User
+}
+
+// 14. Update User Endpoint (PATCH /api/users/:condoId/:userId)
+export const updateUserApi = async (
+  condoId: string,
+  userId: string,
+  payload: UpdateUserPayload
+): Promise<User> => {
+  const response = await fetchWithAuth(`/api/users/${condoId}/${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to update user information.')
+  }
+
+  return (json.data?.user || json.data || json) as User
+}
+
+// 15. Update User Role Endpoint (PATCH /api/users/:condoId/:userId/role)
+export const updateUserRoleApi = async (
+  condoId: string,
+  userId: string,
+  role: string
+): Promise<User> => {
+  const response = await fetchWithAuth(`/api/users/${condoId}/${userId}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role }),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to update user role.')
+  }
+
+  return (json.data?.user || json.data || json) as User
+}
+
+// 16. Delete User Endpoint (DELETE /api/users/:condoId/:userId)
+export const deleteUserApi = async (
+  condoId: string,
+  userId: string
+): Promise<void> => {
+  const response = await fetchWithAuth(`/api/users/${condoId}/${userId}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    const json = await response.json().catch(() => ({}))
+    throw new Error(json.message || 'Failed to delete user.')
+  }
 }

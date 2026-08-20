@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 import type { User } from '../../services/types/auth'
+import { deleteUserApi } from '../../services/api/apiClient'
 
 interface DeleteUserModalProps {
   isOpen: boolean
@@ -13,14 +14,29 @@ export const DeleteUserModal = ({
   isOpen,
   user,
   onClose,
+  onSuccess,
 }: DeleteUserModalProps) => {
+  const [isDeleting, setIsDeleting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   if (!isOpen) return null
 
-  const handleDelete = () => {
-    // Backend DELETE user endpoint pending contract definition
-    setErrorMessage('User delete endpoint is pending backend contract definition.')
+  const handleDelete = async () => {
+    const userId = user.id
+    const condoId = user.condoId || user.condoCode || '550e8400-e29b-41d4-a716-446655440001'
+
+    try {
+      setIsDeleting(true)
+      setErrorMessage(null)
+      await deleteUserApi(condoId, userId)
+      onSuccess()
+      onClose()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete user.'
+      setErrorMessage(msg)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -61,7 +77,7 @@ export const DeleteUserModal = ({
         </div>
 
         {errorMessage && (
-          <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-400">
+          <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-400">
             {errorMessage}
           </div>
         )}
@@ -76,10 +92,11 @@ export const DeleteUserModal = ({
           </button>
           <button
             type="button"
+            disabled={isDeleting}
             onClick={handleDelete}
-            className="rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-red-500 cursor-pointer"
+            className="rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-red-500 disabled:opacity-60 cursor-pointer"
           >
-            Delete User
+            {isDeleting ? 'Deleting...' : 'Delete User'}
           </button>
         </div>
       </div>
