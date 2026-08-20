@@ -8,6 +8,7 @@ export interface AuthContextType {
   isLoading: boolean
   login: (credentials: LoginCredentials, rememberMe: boolean) => Promise<void>
   logout: () => Promise<void>
+  setUser: (user: User | null) => void
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)

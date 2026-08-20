@@ -2,6 +2,7 @@ import type {
   AuthSession,
   LoginCredentials,
   LoginResponse,
+  User,
 } from '../types/auth'
 
 const STORAGE_KEY = 'homeaxis_auth_session'
@@ -11,7 +12,7 @@ const getApiBaseUrl = (): string => {
   if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
     return envUrl.trim().replace(/\/+$/, '')
   }
-  return 'https://homeaxis-cms.onrender.com'
+  return 'https://backend-a3xi.onrender.com'
 }
 
 export const API_BASE_URL = getApiBaseUrl()
@@ -175,4 +176,47 @@ export const fetchWithAuth = async (
   }
 
   return response
+}
+
+// 5. Get Profile Endpoint (GET /api/auth/me)
+export const getProfileApi = async (): Promise<User> => {
+  const response = await fetchWithAuth('/api/auth/me', {
+    method: 'GET',
+  })
+
+  const json = await response.json()
+
+  if (!response.ok || !json.success) {
+    throw new Error(json.message || 'Unable to load profile.')
+  }
+
+  return json.data as User
+}
+
+// 6. Update Profile Endpoint (PATCH /api/auth/me)
+export const updateProfileApi = async (formData: FormData): Promise<User> => {
+  const response = await fetchWithAuth('/api/auth/me', {
+    method: 'PATCH',
+    body: formData,
+  })
+
+  const json = await response.json()
+
+  if (!response.ok || !json.success) {
+    throw new Error(json.message || 'Unable to update profile.')
+  }
+
+  const updatedUser = json.data as User
+
+  // Update session in storage if present
+  const currentSession = getStoredSession()
+  if (currentSession) {
+    currentSession.user = {
+      ...currentSession.user,
+      ...updatedUser,
+    }
+    saveStoredSession(currentSession)
+  }
+
+  return updatedUser
 }
