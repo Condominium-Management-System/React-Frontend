@@ -11,6 +11,7 @@ import {
   RefreshCw,
   FileCheck,
   Key,
+  CheckCircle,
 } from 'lucide-react'
 import type { User } from '../../services/types/auth'
 import { getProfileApi } from '../../services/api/apiClient'
@@ -26,6 +27,7 @@ export const Profile = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  const [successBanner, setSuccessBanner] = useState<string | null>(null)
 
   // Fetch user profile on mount
   const fetchProfile = useCallback(async () => {
@@ -52,6 +54,10 @@ export const Profile = () => {
   const handleProfileUpdated = (updatedUser: User) => {
     setProfile(updatedUser)
     setAuthUser(updatedUser)
+    setSuccessBanner('Profile updated successfully.')
+    setTimeout(() => {
+      setSuccessBanner(null)
+    }, 4000)
   }
 
   // Initials calculation
@@ -109,6 +115,14 @@ export const Profile = () => {
           Manage your personal information and account details.
         </p>
       </div>
+
+      {/* Success Banner */}
+      {successBanner && (
+        <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs font-semibold text-emerald-400 shadow-sm transition-all">
+          <CheckCircle className="h-5 w-5 shrink-0" />
+          <span>{successBanner}</span>
+        </div>
+      )}
 
       {/* 2. Profile Summary Card */}
       <div className="rounded-2xl border border-gray-800/80 bg-[#0F131C] p-6 shadow-sm">
