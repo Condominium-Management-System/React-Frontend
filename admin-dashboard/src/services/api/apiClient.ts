@@ -5,6 +5,11 @@ import type {
   User,
 } from '../types/auth'
 import type { DashboardData } from '../types/dashboard'
+import type {
+  Condo,
+  CreateCondoPayload,
+  UpdateCondoPayload,
+} from '../types/condo'
 
 const STORAGE_KEY = 'homeaxis_auth_session'
 
@@ -235,4 +240,74 @@ export const getDashboardApi = async (): Promise<DashboardData> => {
   }
 
   return json.data as DashboardData
+}
+
+// 8. Get Condominiums Endpoint (GET /api/condos)
+export const getCondosApi = async (): Promise<Condo[]> => {
+  const response = await fetchWithAuth('/api/condos', {
+    method: 'GET',
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to load condominiums.')
+  }
+
+  const condoList = Array.isArray(json.data)
+    ? json.data
+    : Array.isArray(json)
+    ? json
+    : []
+
+  return condoList as Condo[]
+}
+
+// 9. Create Condominium Endpoint (POST /api/condos)
+export const createCondoApi = async (
+  payload: CreateCondoPayload
+): Promise<Condo> => {
+  const response = await fetchWithAuth('/api/condos', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to create condominium.')
+  }
+
+  return (json.data || json) as Condo
+}
+
+// 10. Update Condominium Endpoint (PATCH /api/condos/:id)
+export const updateCondoApi = async (
+  id: string,
+  payload: UpdateCondoPayload
+): Promise<Condo> => {
+  const response = await fetchWithAuth(`/api/condos/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to update condominium.')
+  }
+
+  return (json.data || json) as Condo
+}
+
+// 11. Delete Condominium Endpoint (DELETE /api/condos/:id)
+export const deleteCondoApi = async (id: string): Promise<void> => {
+  const response = await fetchWithAuth(`/api/condos/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    const json = await response.json().catch(() => ({}))
+    throw new Error(json.message || 'Failed to delete condominium.')
+  }
 }

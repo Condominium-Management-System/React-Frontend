@@ -1,31 +1,76 @@
-import { useState, useMemo } from 'react'
-import { Search, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, Building2 } from 'lucide-react'
-import { initialCondosMockData, type Condo } from './condoMockData'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import {
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Building2,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react'
+import type { Condo } from '../../services/types/condo'
+import { getCondosApi } from '../../services/api/apiClient'
 import RegisterCondoModal from '../../components/condo/RegisterCondoModal'
+import EditCondoModal from '../../components/condo/EditCondoModal'
+import DeleteCondoModal from '../../components/condo/DeleteCondoModal'
 
 const ITEMS_PER_PAGE = 8
 
 export const CondoManagement = () => {
-  const [condos, setCondos] = useState<Condo[]>(initialCondosMockData)
+  const [condos, setCondos] = useState<Condo[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCity, setSelectedCity] = useState('All Cities')
   const [currentPage, setCurrentPage] = useState(1)
+
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
 
-  // Compute unique cities list dynamically from current data
+  const [selectedEditCondo, setSelectedEditCondo] = useState<Condo | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+
+  const [selectedDeleteCondo, setSelectedDeleteCondo] = useState<Condo | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+
+  // Fetch condominiums from backend
+  const fetchCondos = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setErrorMessage(null)
+      const data = await getCondosApi()
+      setCondos(data)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to load condominiums.'
+      setErrorMessage(msg)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchCondos()
+  }, [fetchCondos])
+
+  // Compute unique cities list dynamically from loaded condominiums
   const availableCities = useMemo(() => {
-    const citiesSet = new Set(condos.map((c) => c.city))
+    const citiesSet = new Set(
+      condos.map((c) => c.city).filter((c): c is string => Boolean(c))
+    )
     return ['All Cities', ...Array.from(citiesSet).sort()]
   }, [condos])
 
   // Filter condominiums based on search query and city filter
   const filteredCondos = useMemo(() => {
     return condos.filter((condo) => {
+      const query = searchQuery.toLowerCase()
       const matchesSearch =
-        condo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        condo.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        condo.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        condo.admin.toLowerCase().includes(searchQuery.toLowerCase())
+        (condo.condoName || '').toLowerCase().includes(query) ||
+        (condo.condoCode || '').toLowerCase().includes(query) ||
+        (condo.city || '').toLowerCase().includes(query) ||
+        (condo.address || '').toLowerCase().includes(query)
 
       const matchesCity =
         selectedCity === 'All Cities' || condo.city === selectedCity
@@ -37,8 +82,6 @@ export const CondoManagement = () => {
   // Calculate pagination parameters
   const totalItems = filteredCondos.length
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1
-
-  // Keep current page within valid bounds if dataset shrinks
   const validCurrentPage = Math.min(currentPage, totalPages)
 
   // Slice paginated items
@@ -47,7 +90,6 @@ export const CondoManagement = () => {
     return filteredCondos.slice(startIndex, startIndex + ITEMS_PER_PAGE)
   }, [filteredCondos, validCurrentPage])
 
-  // Reset pagination when search query or city changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
     setCurrentPage(1)
@@ -58,26 +100,56 @@ export const CondoManagement = () => {
     setCurrentPage(1)
   }
 
-  // Handle register new condo
-  const handleRegisterCondo = (newCondo: Condo) => {
-    setCondos((prev) => [newCondo, ...prev])
-    setCurrentPage(1)
+  const handleOpenEdit = (condo: Condo) => {
+    setSelectedEditCondo(condo)
+    setIsEditModalOpen(true)
   }
 
-  // Handle frontend-only deletion
-  const handleDeleteCondo = (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete ${name}?`)) {
-      setCondos((prev) => prev.filter((c) => c.id !== id))
-    }
+  const handleOpenDelete = (condo: Condo) => {
+    setSelectedDeleteCondo(condo)
+    setIsDeleteModalOpen(true)
   }
 
-  // Page range numbers
+  // Page range numbers for display
   const startIndexDisplay =
     totalItems === 0 ? 0 : (validCurrentPage - 1) * ITEMS_PER_PAGE + 1
   const endIndexDisplay = Math.min(
     validCurrentPage * ITEMS_PER_PAGE,
     totalItems
   )
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 w-full items-center justify-center text-gray-400 select-none">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D3AD32] border-t-transparent" />
+          <span className="text-xs font-semibold tracking-wider uppercase text-gray-400">
+            Loading condominiums...
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="rounded-2xl border border-gray-800 bg-[#0F131C] p-8 text-center text-gray-400 max-w-lg mx-auto mt-10 select-none">
+        <AlertCircle className="h-10 w-10 text-red-400 mx-auto mb-3" />
+        <h3 className="text-lg font-bold text-gray-200">
+          Failed to load condominiums
+        </h3>
+        <p className="mt-1 text-xs text-gray-400">{errorMessage}</p>
+        <button
+          type="button"
+          onClick={fetchCondos}
+          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#D3AD32] px-4 py-2 text-xs font-bold text-gray-950 transition-colors hover:bg-[#E4C043] cursor-pointer"
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span>Retry</span>
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 select-none">
@@ -102,7 +174,7 @@ export const CondoManagement = () => {
         <button
           type="button"
           onClick={() => setIsRegisterModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#D3AD32] px-4 py-2.5 text-xs font-bold text-gray-950 transition-colors hover:bg-[#E4C043] focus:outline-none focus:ring-2 focus:ring-[#D3AD32] focus:ring-offset-2 focus:ring-offset-[#090D16] shadow-sm shrink-0"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#D3AD32] px-4 py-2.5 text-xs font-bold text-gray-950 transition-colors hover:bg-[#E4C043] focus:outline-none focus:ring-2 focus:ring-[#D3AD32] focus:ring-offset-2 focus:ring-offset-[#090D16] shadow-sm shrink-0 cursor-pointer"
         >
           <Plus className="h-4 w-4 stroke-[2.5]" />
           <span>Register New Condo</span>
@@ -163,14 +235,14 @@ export const CondoManagement = () => {
                     key={condo.id}
                     className="transition-colors hover:bg-[#131926]"
                   >
-                    {/* 1. CONDO CODE (Gold Accent) */}
+                    {/* 1. CONDO CODE */}
                     <td className="py-3.5 px-4 md:px-5 font-bold text-[#D3AD32] whitespace-nowrap">
-                      {condo.code}
+                      {condo.condoCode}
                     </td>
 
                     {/* 2. CONDO NAME */}
                     <td className="py-3.5 px-4 md:px-5 font-medium text-gray-100 whitespace-nowrap">
-                      {condo.name}
+                      {condo.condoName}
                     </td>
 
                     {/* 3. CITY */}
@@ -178,26 +250,26 @@ export const CondoManagement = () => {
                       {condo.city}
                     </td>
 
-                    {/* 4. ADMINS */}
-                    <td className="py-3.5 px-4 md:px-5 text-gray-300 whitespace-nowrap">
-                      {condo.admin}
+                    {/* 4. ADMINS (Admin Count integer: _count.users) */}
+                    <td className="py-3.5 px-4 md:px-5 text-gray-300 font-semibold whitespace-nowrap">
+                      {condo._count?.users ?? 0}
                     </td>
 
-                    {/* 5. UNITS */}
+                    {/* 5. UNITS (Blocks or Rooms Count: _count.blocks / maxAdmins) */}
                     <td className="py-3.5 px-4 md:px-5 font-semibold text-gray-200 whitespace-nowrap">
-                      {condo.units}
+                      {condo._count?.blocks ?? 0} Blocks ({condo.maxAdmins} Max Admins)
                     </td>
 
                     {/* 6. STATUS BADGE */}
                     <td className="py-3.5 px-4 md:px-5 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
-                          condo.status === 'Active'
+                          condo.activeStatus
                             ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                             : 'border-red-500/30 bg-red-500/10 text-red-400'
                         }`}
                       >
-                        {condo.status}
+                        {condo.activeStatus ? 'Active' : 'Inactive'}
                       </span>
                     </td>
 
@@ -207,15 +279,16 @@ export const CondoManagement = () => {
                         <button
                           type="button"
                           title="Edit Condominium"
-                          className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-800 hover:text-[#D3AD32]"
+                          onClick={() => handleOpenEdit(condo)}
+                          className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-800 hover:text-[#D3AD32] cursor-pointer"
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
                         <button
                           type="button"
                           title="Delete Condominium"
-                          onClick={() => handleDeleteCondo(condo.id, condo.name)}
-                          className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-800 hover:text-red-400"
+                          onClick={() => handleOpenDelete(condo)}
+                          className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-800 hover:text-red-400 cursor-pointer"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -260,7 +333,7 @@ export const CondoManagement = () => {
               type="button"
               disabled={validCurrentPage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              className="flex items-center gap-1 rounded-lg border border-gray-800 bg-gray-900 px-2.5 py-1.5 font-medium text-gray-300 transition-colors hover:bg-gray-800 disabled:opacity-40 disabled:hover:bg-gray-900"
+              className="flex items-center gap-1 rounded-lg border border-gray-800 bg-gray-900 px-2.5 py-1.5 font-medium text-gray-300 transition-colors hover:bg-gray-800 disabled:opacity-40 disabled:hover:bg-gray-900 cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
               <span className="hidden sm:inline">Previous</span>
@@ -272,7 +345,7 @@ export const CondoManagement = () => {
                 key={pageNum}
                 type="button"
                 onClick={() => setCurrentPage(pageNum)}
-                className={`min-w-[32px] h-8 rounded-lg text-xs font-semibold transition-colors ${
+                className={`min-w-[32px] h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                   pageNum === validCurrentPage
                     ? 'bg-[#D3AD32] text-gray-950 font-bold'
                     : 'border border-gray-800 bg-gray-900 text-gray-300 hover:bg-gray-800'
@@ -287,7 +360,7 @@ export const CondoManagement = () => {
               type="button"
               disabled={validCurrentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              className="flex items-center gap-1 rounded-lg border border-gray-800 bg-gray-900 px-2.5 py-1.5 font-medium text-gray-300 transition-colors hover:bg-gray-800 disabled:opacity-40 disabled:hover:bg-gray-900"
+              className="flex items-center gap-1 rounded-lg border border-gray-800 bg-gray-900 px-2.5 py-1.5 font-medium text-gray-300 transition-colors hover:bg-gray-800 disabled:opacity-40 disabled:hover:bg-gray-900 cursor-pointer"
             >
               <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4" />
@@ -296,12 +369,36 @@ export const CondoManagement = () => {
         </div>
       </div>
 
-      {/* 6. Register New Condo Modal */}
+      {/* 6. Modals */}
       <RegisterCondoModal
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
-        onRegister={handleRegisterCondo}
+        onSuccess={fetchCondos}
       />
+
+      {selectedEditCondo && (
+        <EditCondoModal
+          isOpen={isEditModalOpen}
+          condo={selectedEditCondo}
+          onClose={() => {
+            setIsEditModalOpen(false)
+            setSelectedEditCondo(null)
+          }}
+          onSuccess={fetchCondos}
+        />
+      )}
+
+      {selectedDeleteCondo && (
+        <DeleteCondoModal
+          isOpen={isDeleteModalOpen}
+          condo={selectedDeleteCondo}
+          onClose={() => {
+            setIsDeleteModalOpen(false)
+            setSelectedDeleteCondo(null)
+          }}
+          onSuccess={fetchCondos}
+        />
+      )}
     </div>
   )
 }
