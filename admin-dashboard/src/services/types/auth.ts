@@ -12,10 +12,14 @@ export interface User {
   profilePhoto?: string
 }
 
+export interface UserProfileResponseData {
+  user: User
+}
+
 export interface UserProfileResponse {
   success: boolean
   message?: string
-  data: User
+  data: UserProfileResponseData | User
 }
 
 export interface LoginCredentials {
