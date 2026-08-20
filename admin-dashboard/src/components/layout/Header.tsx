@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Search, Bell, Menu } from 'lucide-react'
 import { useAuth } from '../../context/useAuth'
 
@@ -17,6 +17,8 @@ const getPageTitle = (pathname: string): string => {
       return 'User Management'
     case '/payments':
       return 'Payment Management'
+    case '/profile':
+      return 'My Profile'
     default:
       return 'Super Admin Dashboard'
   }
@@ -24,6 +26,7 @@ const getPageTitle = (pathname: string): string => {
 
 export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
   const location = useLocation()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const displayTitle = title || getPageTitle(location.pathname)
 
@@ -80,7 +83,13 @@ export const Header = ({ title, onMobileMenuToggle }: HeaderProps) => {
         </button>
 
         {/* Super Admin User Area */}
-        <div className="flex items-center gap-2 border-l border-gray-800 pl-3 md:pl-5">
+        <div
+          onClick={() => navigate('/profile')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/profile')}
+          className="flex items-center gap-2 border-l border-gray-800 pl-3 md:pl-5 cursor-pointer rounded-lg p-1 transition-colors hover:bg-gray-800/60"
+        >
           <div className="hidden text-right lg:block">
             <p className="text-xs font-semibold text-gray-200">{displayName}</p>
             <p className="text-[10px] text-[#D3AD32] capitalize">{displayRole}</p>

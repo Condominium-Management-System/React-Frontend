@@ -1,8 +1,21 @@
 export interface User {
   id: string
   fullName: string
-  email?: string
+  email: string
+  phoneNumber?: string
+  fan?: string
   role: string
+  condoId?: string
+  condoCode?: string
+  condoName?: string
+  isVerified?: boolean
+  profilePhoto?: string
+}
+
+export interface UserProfileResponse {
+  success: boolean
+  message?: string
+  data: User
 }
 
 export interface LoginCredentials {

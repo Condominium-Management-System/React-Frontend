@@ -71,6 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         login,
         logout,
+        setUser,
       }}
     >
       {children}

@@ -4,6 +4,7 @@ import {
   Building2,
   Users,
   CreditCard,
+  User,
   LogOut,
   X,
 } from 'lucide-react'
@@ -36,6 +37,11 @@ const navItems = [
     name: 'Payment Management',
     path: '/payments',
     icon: CreditCard,
+  },
+  {
+    name: 'My Profile',
+    path: '/profile',
+    icon: User,
   },
 ]
 
