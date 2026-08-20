@@ -191,7 +191,7 @@ export const getProfileApi = async (): Promise<User> => {
     throw new Error(json.message || 'Unable to load profile.')
   }
 
-  return json.data as User
+  return (json.data?.user || json.data) as User
 }
 
 // 6. Update Profile Endpoint (PATCH /api/auth/me)
@@ -207,7 +207,7 @@ export const updateProfileApi = async (formData: FormData): Promise<User> => {
     throw new Error(json.message || 'Unable to update profile.')
   }
 
-  const updatedUser = json.data as User
+  const updatedUser = (json.data?.user || json.data) as User
 
   // Update session in storage if present
   const currentSession = getStoredSession()

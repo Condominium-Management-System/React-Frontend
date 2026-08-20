@@ -17,17 +17,19 @@ export const UserProfile = ({
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  const displayName = name || user?.fullName || 'Solomon Degefe'
-  const displayRole = role || user?.role || 'Platform Supervisor'
+  const displayName = name || user?.fullName || 'User'
+  const displayRole =
+    role || (user?.role ? user.role.replace(/_/g, ' ') : 'Administrator')
 
-  // Generate initials dynamically (e.g. "Solomon Degefe" -> "SD")
-  const initials = displayName
-    .split(' ')
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase() || 'SD'
+  // Generate initials dynamically
+  const initials =
+    displayName
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase() || 'U'
 
   const handleClick = () => {
     if (onClick) {
