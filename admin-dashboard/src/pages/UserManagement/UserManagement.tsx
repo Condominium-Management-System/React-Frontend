@@ -16,9 +16,15 @@ import RegisterUserModal from '../../components/user/RegisterUserModal'
 import EditUserModal from '../../components/user/EditUserModal'
 import DeleteUserModal from '../../components/user/DeleteUserModal'
 
+import { useAuth } from '../../context/useAuth'
+import { isSuperAdmin } from '../../utils/roleHelpers'
+
 const ITEMS_PER_PAGE = 8
 
 export const UserManagement = () => {
+  const { user: authUser } = useAuth()
+  const isSuperAdminUser = isSuperAdmin(authUser?.role)
+
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -55,27 +61,34 @@ export const UserManagement = () => {
     fetchUsers()
   }, [fetchUsers])
 
-  // Filter users based on search, role, and status
+  // Filter users based on search, role, status, and condoId scope
   const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
+    return users.filter((userItem) => {
+      // Condo Admin scope filter
+      if (!isSuperAdminUser && authUser?.condoId) {
+        if (userItem.condoId && userItem.condoId !== authUser.condoId) {
+          return false
+        }
+      }
+
       const query = searchQuery.toLowerCase()
 
       const matchesSearch =
-        (user.fullName || '').toLowerCase().includes(query) ||
-        (user.email || '').toLowerCase().includes(query) ||
-        (user.phoneNumber || '').toLowerCase().includes(query)
+        (userItem.fullName || '').toLowerCase().includes(query) ||
+        (userItem.email || '').toLowerCase().includes(query) ||
+        (userItem.phoneNumber || '').toLowerCase().includes(query)
 
       const matchesRole =
-        selectedRole === 'ALL' || user.role === selectedRole
+        selectedRole === 'ALL' || userItem.role === selectedRole
 
       const matchesStatus =
         selectedStatus === 'ALL' ||
-        (selectedStatus === 'ACTIVE' && user.isVerified === true) ||
-        (selectedStatus === 'PENDING' && user.isVerified === false)
+        (selectedStatus === 'ACTIVE' && userItem.isVerified === true) ||
+        (selectedStatus === 'PENDING' && userItem.isVerified === false)
 
       return matchesSearch && matchesRole && matchesStatus
     })
-  }, [users, searchQuery, selectedRole, selectedStatus])
+  }, [users, searchQuery, selectedRole, selectedStatus, isSuperAdminUser, authUser])
 
   // Calculate pagination parameters
   const totalItems = filteredUsers.length

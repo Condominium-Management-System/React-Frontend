@@ -14,15 +14,20 @@ export const AppRoutes = () => {
       {/* Public Login Route */}
       <Route path="/login" element={<Login />} />
 
-      {/* Protected Routes inside AdminLayout */}
+      {/* Protected Console Routes inside AdminLayout */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AdminLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/condos" element={<CondoManagement />} />
           <Route path="/users" element={<UserManagement />} />
           <Route path="/payments" element={<PaymentManagement />} />
           <Route path="/profile" element={<Profile />} />
+
+          {/* Super Admin Only Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['super_admin']} />}>
+            <Route path="/condos" element={<CondoManagement />} />
+          </Route>
+
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>
