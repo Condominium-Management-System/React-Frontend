@@ -1,17 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import {
-  Search,
-  UserPlus,
-  Pencil,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Users as UsersIcon,
-  AlertCircle,
-  RefreshCw,
-} from 'lucide-react'
+import { UserPlus, AlertCircle, RefreshCw } from 'lucide-react'
 import type { User } from '../../services/types/auth'
 import { getUsersApi } from '../../services/api/apiClient'
+import UserFilters from '../../components/user/UserFilters'
+import UserTable from '../../components/user/UserTable'
 import RegisterUserModal from '../../components/user/RegisterUserModal'
 import EditUserModal from '../../components/user/EditUserModal'
 import DeleteUserModal from '../../components/user/DeleteUserModal'
@@ -214,209 +206,30 @@ export const UserManagement = () => {
       </div>
 
       {/* 3. Search Bar + Filters Row */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        {/* Search Input */}
-        <div className="relative flex-1">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-            <Search className="h-4 w-4" />
-          </div>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Search users by name, email or phone..."
-            className="w-full rounded-lg border border-gray-800 bg-[#0F131C] py-2.5 pl-9 pr-4 text-xs md:text-sm text-gray-200 placeholder-gray-500 transition-colors focus:border-[#D3AD32] focus:outline-none"
-          />
-        </div>
-
-        {/* Role Filter Dropdown */}
-        <div className="w-full sm:w-44 shrink-0">
-          <select
-            value={selectedRole}
-            onChange={handleRoleChange}
-            className="w-full rounded-lg border border-gray-800 bg-[#0F131C] py-2.5 px-3 text-xs md:text-sm text-gray-200 transition-colors focus:border-[#D3AD32] focus:outline-none"
-          >
-            <option value="ALL">All Roles</option>
-            <option value="resident">Resident</option>
-            <option value="guard">Guard</option>
-            <option value="condo_admin">Condo Admin</option>
-            <option value="super_admin">Super Admin</option>
-          </select>
-        </div>
-
-        {/* Status Filter Dropdown */}
-        <div className="w-full sm:w-40 shrink-0">
-          <select
-            value={selectedStatus}
-            onChange={handleStatusChange}
-            className="w-full rounded-lg border border-gray-800 bg-[#0F131C] py-2.5 px-3 text-xs md:text-sm text-gray-200 transition-colors focus:border-[#D3AD32] focus:outline-none"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="ACTIVE">Active</option>
-            <option value="PENDING">Pending</option>
-          </select>
-        </div>
-      </div>
+      <UserFilters
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+        selectedRole={selectedRole}
+        onRoleChange={handleRoleChange}
+        selectedStatus={selectedStatus}
+        onStatusChange={handleStatusChange}
+      />
 
       {/* 4. Main Table Container */}
-      <div className="rounded-xl border border-gray-800/80 bg-[#0F131C] shadow-sm overflow-hidden">
-        <div className="w-full overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[750px]">
-            <thead>
-              <tr className="border-b border-gray-800 bg-gray-900/60 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">
-                <th className="py-3.5 px-4 md:px-5">FULL NAME</th>
-                <th className="py-3.5 px-4 md:px-5">EMAIL</th>
-                <th className="py-3.5 px-4 md:px-5">PHONE</th>
-                <th className="py-3.5 px-4 md:px-5">ROLE</th>
-                <th className="py-3.5 px-4 md:px-5">ALLOCATED CONDO</th>
-                <th className="py-3.5 px-4 md:px-5">STATUS</th>
-                <th className="py-3.5 px-4 md:px-5 text-right">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800/60 text-xs md:text-sm">
-              {paginatedUsers.length > 0 ? (
-                paginatedUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="transition-colors hover:bg-[#131926]"
-                  >
-                    {/* 1. FULL NAME */}
-                    <td className="py-3.5 px-4 md:px-5 font-bold text-gray-100 whitespace-nowrap">
-                      {user.fullName}
-                    </td>
+      <UserTable
+        users={paginatedUsers}
+        currentPage={validCurrentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        startIndexDisplay={startIndexDisplay}
+        endIndexDisplay={endIndexDisplay}
+        onPageChange={setCurrentPage}
+        onEditUser={handleOpenEdit}
+        onDeleteUser={handleOpenDelete}
+        formatRole={formatRole}
+      />
 
-                    {/* 2. EMAIL */}
-                    <td className="py-3.5 px-4 md:px-5 text-gray-300 whitespace-nowrap">
-                      {user.email}
-                    </td>
-
-                    {/* 3. PHONE */}
-                    <td className="py-3.5 px-4 md:px-5 text-gray-400 whitespace-nowrap font-mono">
-                      {user.phoneNumber || '—'}
-                    </td>
-
-                    {/* 4. ROLE */}
-                    <td className="py-3.5 px-4 md:px-5 whitespace-nowrap">
-                      <span className="inline-block rounded-full border border-gray-800 bg-gray-900 px-2.5 py-0.5 text-xs font-semibold text-gray-200">
-                        {formatRole(user.role)}
-                      </span>
-                    </td>
-
-                    {/* 5. ALLOCATED CONDO */}
-                    <td className="py-3.5 px-4 md:px-5 font-bold text-[#D3AD32] font-mono whitespace-nowrap">
-                      {user.condoCode || 'Not assigned'}
-                    </td>
-
-                    {/* 6. STATUS BADGE */}
-                    <td className="py-3.5 px-4 md:px-5 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
-                          user.isVerified === true
-                            ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-                            : 'border-amber-500/30 bg-amber-500/10 text-amber-400'
-                        }`}
-                      >
-                        {user.isVerified === true ? 'Active' : 'Pending'}
-                      </span>
-                    </td>
-
-                    {/* 7. ACTIONS */}
-                    <td className="py-3.5 px-4 md:px-5 text-right whitespace-nowrap">
-                      <div className="inline-flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          title="Edit User"
-                          onClick={() => handleOpenEdit(user)}
-                          className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-800 hover:text-[#D3AD32] cursor-pointer"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          title="Delete User"
-                          onClick={() => handleOpenDelete(user)}
-                          className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-800 hover:text-red-400 cursor-pointer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                /* Empty State */
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="py-12 px-4 text-center text-gray-400"
-                  >
-                    <div className="flex flex-col items-center justify-center">
-                      <UsersIcon className="h-10 w-10 text-gray-600 mb-2" />
-                      <p className="text-sm font-semibold text-gray-300">
-                        No users found
-                      </p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        Try adjusting your search terms or role/status filters.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* 5. Pagination Footer */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-gray-800 bg-gray-950/40 px-4 md:px-5 py-3.5 text-xs text-gray-400">
-          <div>
-            Showing <span className="font-semibold text-gray-200">{startIndexDisplay}</span>-
-            <span className="font-semibold text-gray-200">{endIndexDisplay}</span> of{' '}
-            <span className="font-semibold text-gray-200">{totalItems}</span> users
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Previous Page Button */}
-            <button
-              type="button"
-              disabled={validCurrentPage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              className="flex items-center gap-1 rounded-lg border border-gray-800 bg-gray-900 px-2.5 py-1.5 font-medium text-gray-300 transition-colors hover:bg-gray-800 disabled:opacity-40 disabled:hover:bg-gray-900 cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Previous</span>
-            </button>
-
-            {/* Page Numbers */}
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-              <button
-                key={pageNum}
-                type="button"
-                onClick={() => setCurrentPage(pageNum)}
-                className={`min-w-[32px] h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                  pageNum === validCurrentPage
-                    ? 'bg-[#D3AD32] text-gray-950 font-bold'
-                    : 'border border-gray-800 bg-gray-900 text-gray-300 hover:bg-gray-800'
-                }`}
-              >
-                {pageNum}
-              </button>
-            ))}
-
-            {/* Next Page Button */}
-            <button
-              type="button"
-              disabled={validCurrentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              className="flex items-center gap-1 rounded-lg border border-gray-800 bg-gray-900 px-2.5 py-1.5 font-medium text-gray-300 transition-colors hover:bg-gray-800 disabled:opacity-40 disabled:hover:bg-gray-900 cursor-pointer"
-            >
-              <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 6. Modals */}
+      {/* 5. Modals */}
       <RegisterUserModal
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
