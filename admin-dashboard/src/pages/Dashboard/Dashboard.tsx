@@ -16,7 +16,13 @@ import { getDashboardApi } from '../../services/api/apiClient'
 import StatCard from '../../components/dashboard/StatCard'
 import PropertyOverview from '../../components/dashboard/PropertyOverview'
 
+import { useAuth } from '../../context/useAuth'
+import { isSuperAdmin } from '../../utils/roleHelpers'
+
 export const Dashboard = () => {
+  const { user } = useAuth()
+  const isSuper = isSuperAdmin(user?.role)
+
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -93,17 +99,19 @@ export const Dashboard = () => {
       {/* 1. Header Section */}
       <div className="rounded-xl border border-gray-800/80 bg-[#0F131C] p-6 shadow-sm">
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-100 tracking-tight">
-          Super Admin Dashboard
+          {isSuper ? 'Super Admin Dashboard' : 'Condominium Admin Dashboard'}
         </h1>
         <p className="mt-1 text-xs md:text-sm text-gray-400">
-          Real-time metrics and system statistics across your condominium network.
+          {isSuper
+            ? 'Real-time metrics and system statistics across your condominium network.'
+            : 'Real-time metrics and property statistics for your assigned condominium.'}
         </p>
       </div>
 
       {/* 2. Primary Statistics Grid (8 Cards: 2 Rows of 4 Cards) */}
       <div className="space-y-4">
         <h2 className="text-base font-bold text-gray-200 tracking-tight">
-          System Overview & Metrics
+          {isSuper ? 'System Overview & Metrics' : 'Property Overview & Metrics'}
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
@@ -115,12 +123,16 @@ export const Dashboard = () => {
             subtext={`Verified: ${fmt(dashboardData.users?.verified)} | Unverified: ${fmt(dashboardData.users?.unverified)}`}
           />
 
-          {/* Card 2: Total Condominiums */}
+          {/* Card 2: Total Condominiums / Property Scope */}
           <StatCard
-            title="Total Condominiums"
-            value={fmt(dashboardData.condos?.total)}
+            title={isSuper ? 'Total Condominiums' : 'Property Scope'}
+            value={isSuper ? fmt(dashboardData.condos?.total) : (user?.condoCode || '1 Condo')}
             icon={Building2}
-            subtext={`Active: ${fmt(dashboardData.condos?.active)}`}
+            subtext={
+              isSuper
+                ? `Active: ${fmt(dashboardData.condos?.active)}`
+                : `Status: Active Property`
+            }
           />
 
           {/* Card 3: Total Equbs */}
