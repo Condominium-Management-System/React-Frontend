@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Building2,
+  DoorOpen,
   Users,
   CreditCard,
   User,
@@ -29,6 +30,11 @@ const navItems = [
     path: '/condos',
     icon: Building2,
     superAdminOnly: true,
+  },
+  {
+    name: 'Blocks & Units',
+    path: '/blocks-rooms',
+    icon: DoorOpen,
   },
   {
     name: 'User Management',

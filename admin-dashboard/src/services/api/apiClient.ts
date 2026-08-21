@@ -16,6 +16,14 @@ import type {
   PaymentStatistics,
   PaymentsQueryParams,
 } from '../types/payment'
+import type {
+  Block,
+  Room,
+  CreateBlockPayload,
+  CreateRoomPayload,
+  BlockStatistics,
+  RoomStatus,
+} from '../types/property'
 
 const STORAGE_KEY = 'homeaxis_auth_session'
 
@@ -554,3 +562,146 @@ export const rejectPaymentApi = async (
 
   return (json.data?.payment || json.data || json) as Payment
 }
+
+// 22. Create Block Endpoint (POST /api/blocks/:condoId/blocks)
+export const createBlockApi = async (
+  condoId: string,
+  payload: CreateBlockPayload
+): Promise<Block> => {
+  const body = {
+    condoId,
+    blockNo: payload.blockNo,
+    noRooms: Number(payload.noRooms) || 1,
+    noFloors: Number(payload.noFloors) || 1,
+  }
+  const response = await fetchWithAuth(`/api/blocks/${condoId}/blocks`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to create block.')
+  }
+
+  return (json.data?.block || json.data || json) as Block
+}
+
+// 23. Get Block Statistics Endpoint (GET /api/blocks/:condoId/blocks/:blockId/statistics)
+export const getBlockStatisticsApi = async (
+  condoId: string,
+  blockId: string
+): Promise<BlockStatistics> => {
+  const response = await fetchWithAuth(
+    `/api/blocks/${condoId}/blocks/${blockId}/statistics`,
+    {
+      method: 'GET',
+    }
+  )
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Unable to load block statistics.')
+  }
+
+  const stats = json.data || json
+  return {
+    blockId,
+    totalRooms: stats.totalRooms ?? stats.total ?? 0,
+    occupiedRooms: stats.occupiedRooms ?? stats.occupied ?? 0,
+    freeRooms: stats.freeRooms ?? stats.free ?? 0,
+    reservedRooms: stats.reservedRooms ?? stats.reserved ?? 0,
+  }
+}
+
+// 24. Create Room Endpoint (POST /api/rooms/:condoId)
+export const createRoomApi = async (
+  condoId: string,
+  payload: CreateRoomPayload
+): Promise<Room> => {
+  const body = {
+    ...payload,
+    condoId,
+  }
+  const response = await fetchWithAuth(`/api/rooms/${condoId}`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to create unit/room.')
+  }
+
+  return (json.data?.room || json.data || json) as Room
+}
+
+// 25. Update Room Status Endpoint (PATCH /api/rooms/:condoId/:roomId/status)
+export const updateRoomStatusApi = async (
+  condoId: string,
+  roomId: string,
+  status: RoomStatus
+): Promise<Room> => {
+  const response = await fetchWithAuth(`/api/rooms/${condoId}/${roomId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to update unit status.')
+  }
+
+  return (json.data?.room || json.data || json) as Room
+}
+
+// 26. Get Blocks Endpoint (GET /api/blocks/:condoId/blocks)
+export const getBlocksApi = async (condoId: string): Promise<Block[]> => {
+  const response = await fetchWithAuth(`/api/blocks/${condoId}/blocks`, {
+    method: 'GET',
+  })
+
+  const json = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    return []
+  }
+
+  const list = Array.isArray(json.data)
+    ? json.data
+    : Array.isArray(json)
+    ? json
+    : []
+
+  return list as Block[]
+}
+
+// 27. Get Rooms Endpoint (GET /api/rooms/:condoId)
+export const getRoomsApi = async (
+  condoId: string,
+  blockId?: string
+): Promise<Room[]> => {
+  const queryString = blockId ? `?blockId=${blockId}` : ''
+  const response = await fetchWithAuth(`/api/rooms/${condoId}${queryString}`, {
+    method: 'GET',
+  })
+
+  const json = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    return []
+  }
+
+  const list = Array.isArray(json.data)
+    ? json.data
+    : Array.isArray(json)
+    ? json
+    : []
+
+  return list as Room[]
+}
+
