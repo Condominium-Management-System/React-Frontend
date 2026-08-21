@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import UserProfile from './UserProfile'
 import { useAuth } from '../../context/useAuth'
+import { isSuperAdmin } from '../../utils/roleHelpers'
 
 interface SidebarProps {
   onNavClick?: () => void
@@ -27,6 +28,7 @@ const navItems = [
     name: 'Condo Management',
     path: '/condos',
     icon: Building2,
+    superAdminOnly: true,
   },
   {
     name: 'User Management',
@@ -50,7 +52,7 @@ export const Sidebar = ({
   onCloseMobile,
   isMobile = false,
 }: SidebarProps) => {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -60,6 +62,14 @@ export const Sidebar = ({
       navigate('/login', { replace: true })
     }
   }
+
+  const isSuper = isSuperAdmin(user?.role)
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.superAdminOnly) {
+      return isSuper
+    }
+    return true
+  })
 
   return (
     <aside className="flex h-full w-64 flex-col border-r border-gray-800/80 bg-[#0F131C] text-gray-200 select-none">
@@ -74,7 +84,7 @@ export const Sidebar = ({
               HOME<span className="text-[#D3AD32]">AXIS</span>
             </h1>
             <span className="mt-1 block font-semibold text-[10px] tracking-widest text-[#D3AD32]/80 uppercase">
-              PREMIUM CONSOLE
+              {isSuper ? 'SUPER CONSOLE' : 'ADMIN CONSOLE'}
             </span>
           </div>
         </div>
@@ -96,7 +106,7 @@ export const Sidebar = ({
         <div className="px-3 pb-2 font-semibold text-[11px] tracking-wider text-gray-500 uppercase">
           Navigation
         </div>
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon
           return (
             <NavLink
