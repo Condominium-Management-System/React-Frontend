@@ -7,6 +7,7 @@ import CondoManagement from '../pages/CondoManagement/CondoManagement'
 import UserManagement from '../pages/UserManagement/UserManagement'
 import PaymentManagement from '../pages/PaymentManagement/PaymentManagement'
 import Profile from '../pages/Profile/Profile'
+import PropertyLayout from '../pages/PropertyLayout/PropertyLayout'
 
 export const AppRoutes = () => {
   return (
@@ -19,6 +20,7 @@ export const AppRoutes = () => {
         <Route element={<AdminLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/blocks-rooms" element={<PropertyLayout />} />
           <Route path="/users" element={<UserManagement />} />
           <Route path="/payments" element={<PaymentManagement />} />
           <Route path="/profile" element={<Profile />} />
