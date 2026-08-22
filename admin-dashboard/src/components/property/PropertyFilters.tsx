@@ -6,7 +6,6 @@ interface PropertyFiltersProps {
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   selectedStatusFilter: string
   onStatusChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
-  isSuper: boolean
   onAddBlock: () => void
   onAddRoom: () => void
 }
@@ -16,7 +15,6 @@ export const PropertyFilters = ({
   onSearchChange,
   selectedStatusFilter,
   onStatusChange,
-  isSuper,
   onAddBlock,
   onAddRoom,
 }: PropertyFiltersProps) => {
@@ -53,28 +51,26 @@ export const PropertyFilters = ({
         </div>
       </div>
 
-      {/* Right: Add Actions (CONDO ADMIN ONLY - Super Admin is VIEW-ONLY) */}
-      {!isSuper && (
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onAddBlock}
-            className="flex items-center gap-1.5 rounded-xl border border-gray-800 bg-gray-900 px-4 py-2.5 text-xs font-bold text-gray-200 transition-colors hover:bg-gray-800 cursor-pointer"
-          >
-            <Plus className="h-4 w-4 text-[#D3AD32]" />
-            <span>Add Block</span>
-          </button>
+      {/* Right: Add Actions */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onAddBlock}
+          className="flex items-center gap-1.5 rounded-xl border border-gray-800 bg-gray-900 px-4 py-2.5 text-xs font-bold text-gray-200 transition-colors hover:bg-gray-800 cursor-pointer"
+        >
+          <Plus className="h-4 w-4 text-[#D3AD32]" />
+          <span>Add Block</span>
+        </button>
 
-          <button
-            type="button"
-            onClick={onAddRoom}
-            className="flex items-center gap-1.5 rounded-xl bg-[#D3AD32] px-4 py-2.5 text-xs font-bold text-gray-950 transition-colors hover:bg-[#E4C043] cursor-pointer"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Unit</span>
-          </button>
-        </div>
-      )}
+        <button
+          type="button"
+          onClick={onAddRoom}
+          className="flex items-center gap-1.5 rounded-xl bg-[#D3AD32] px-4 py-2.5 text-xs font-bold text-gray-950 transition-colors hover:bg-[#E4C043] cursor-pointer"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Add Unit</span>
+        </button>
+      </div>
     </div>
   )
 }

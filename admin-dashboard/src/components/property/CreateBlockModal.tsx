@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Building2, AlertCircle } from 'lucide-react'
 import { createBlockApi } from '../../services/api/propertyApi'
 import type { Block } from '../../services/types/property'
+import type { Condo } from '../../services/types/condo'
 
 interface CreateBlockModalProps {
   isOpen: boolean
   condoId: string
+  condos?: Condo[]
   onClose: () => void
   onSuccess: (newBlock: Block) => void
 }
@@ -13,9 +15,11 @@ interface CreateBlockModalProps {
 export const CreateBlockModal = ({
   isOpen,
   condoId,
+  condos = [],
   onClose,
   onSuccess,
 }: CreateBlockModalProps) => {
+  const [selectedCondoId, setSelectedCondoId] = useState<string>('')
   const [blockNo, setBlockNo] = useState('')
   const [noRooms, setNoRooms] = useState<number>(40)
   const [noFloors, setNoFloors] = useState<number>(5)
@@ -23,14 +27,32 @@ export const CreateBlockModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  const isCondoSelectorNeeded = !condoId || condoId === 'ALL'
+
+  useEffect(() => {
+    if (isOpen) {
+      if (isCondoSelectorNeeded) {
+        setSelectedCondoId(condos[0]?.id || '')
+      } else {
+        setSelectedCondoId(condoId)
+      }
+      setBlockNo('')
+      setNoRooms(40)
+      setNoFloors(5)
+      setErrorMessage(null)
+    }
+  }, [isOpen, condoId, isCondoSelectorNeeded, condos])
+
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMessage(null)
 
-    if (!condoId) {
-      setErrorMessage('Condominium ID is required to create a block.')
+    const targetCondoId = isCondoSelectorNeeded ? selectedCondoId : condoId
+
+    if (!targetCondoId) {
+      setErrorMessage('Please select a condominium for this block.')
       return
     }
 
@@ -41,8 +63,8 @@ export const CreateBlockModal = ({
 
     try {
       setIsSubmitting(true)
-      const created = await createBlockApi(condoId, {
-        condoId,
+      const created = await createBlockApi(targetCondoId, {
+        condoId: targetCondoId,
         blockNo: blockNo.trim(),
         noRooms: Number(noRooms) || 1,
         noFloors: Number(noFloors) || 1,
@@ -75,7 +97,7 @@ export const CreateBlockModal = ({
             <div>
               <h3 className="text-lg font-bold text-gray-100">Add New Block</h3>
               <p className="text-xs text-gray-400">
-                Register a new building block for this condominium
+                Register a new building block for a condominium
               </p>
             </div>
           </div>
@@ -96,6 +118,30 @@ export const CreateBlockModal = ({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Condominium Selector for Super Admin when ALL is selected */}
+          {isCondoSelectorNeeded && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">
+                Select Condominium *
+              </label>
+              <select
+                value={selectedCondoId}
+                onChange={(e) => setSelectedCondoId(e.target.value)}
+                className="w-full rounded-xl border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-xs md:text-sm text-gray-200 focus:border-[#D3AD32] focus:outline-none"
+              >
+                {condos.length > 0 ? (
+                  condos.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.condoName} ({c.condoCode})
+                    </option>
+                  ))
+                ) : (
+                  <option value="">No Condominiums Available</option>
+                )}
+              </select>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">
               Block Number *
