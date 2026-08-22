@@ -8,6 +8,7 @@ src/
 │   ├── auth/            # ProtectedRoute component
 │   ├── condo/           # Condo filters, table, and action modals
 │   ├── dashboard/       # Stat cards & property overview components
+│   ├── iddir/           # Iddir table and registration modal
 │   ├── layout/          # Admin layout shell (Header, Sidebar, UserProfile)
 │   ├── payment/         # Payment stats, filters, table, details & action dialogs
 │   ├── profile/         # Profile cards & update modals
@@ -21,6 +22,7 @@ src/
 ├── pages/               # Page Coordinators (State fetching & modal orchestration)
 │   ├── CondoManagement/ # Condominium management page
 │   ├── Dashboard/       # System analytics dashboard page
+│   ├── IddirManagement/ # Iddir community funds page
 │   ├── Login/           # Login authentication page
 │   ├── PaymentManagement/ # Payment management page
 │   ├── Profile/         # Admin profile page
@@ -35,6 +37,7 @@ src/
 │   │   ├── condoApi.ts     # Condominium CRUD APIs
 │   │   ├── dashboardApi.ts # Analytics dashboard API
 │   │   ├── httpClient.ts   # Shared fetch client with 401 refresh interceptor
+│   │   ├── iddirApi.ts     # Iddir management APIs
 │   │   ├── paymentApi.ts   # Payment management APIs
 │   │   ├── propertyApi.ts  # Property blocks & rooms APIs
 │   │   ├── reportApi.ts    # Maintenance report APIs
@@ -43,6 +46,7 @@ src/
 │       ├── auth.ts      # User & session type definitions
 │       ├── condo.ts     # Condo entity payload types
 │       ├── dashboard.ts # Analytics data response types
+│       ├── iddir.ts     # Iddir type definitions
 │       ├── payment.ts   # Payment invoice & stat types
 │       ├── property.ts  # Block & room unit types
 │       ├── report.ts    # Maintenance report types
