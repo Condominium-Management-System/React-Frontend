@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, RefreshCw, AlertCircle } from 'lucide-react'
-import { updateRoomStatusApi } from '../../services/api/apiClient'
+import { updateRoomStatusApi } from '../../services/api/propertyApi'
 import type { Room, RoomStatus } from '../../services/types/property'
 
 interface UpdateRoomStatusModalProps {

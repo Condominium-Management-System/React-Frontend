@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, Building2, AlertCircle } from 'lucide-react'
-import { createBlockApi } from '../../services/api/apiClient'
+import { createBlockApi } from '../../services/api/propertyApi'
 import type { Block } from '../../services/types/property'
 
 interface CreateBlockModalProps {

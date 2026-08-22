@@ -4,7 +4,7 @@ import type { Payment } from '../../services/types/payment'
 import {
   approvePaymentApi,
   rejectPaymentApi,
-} from '../../services/api/apiClient'
+} from '../../services/api/paymentApi'
 
 interface PaymentActionDialogProps {
   isOpen: boolean

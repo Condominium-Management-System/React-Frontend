@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Pencil, AlertCircle } from 'lucide-react'
 import type { Condo, UpdateCondoPayload } from '../../services/types/condo'
-import { updateCondoApi } from '../../services/api/apiClient'
+import { updateCondoApi } from '../../services/api/condoApi'
 
 interface EditCondoModalProps {
   isOpen: boolean

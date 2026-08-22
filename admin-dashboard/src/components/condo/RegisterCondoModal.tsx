@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { X, Building2, AlertCircle } from 'lucide-react'
 import type { CreateCondoPayload } from '../../services/types/condo'
-import { createCondoApi } from '../../services/api/apiClient'
+import { createCondoApi } from '../../services/api/condoApi'
 
 interface RegisterCondoModalProps {
   isOpen: boolean

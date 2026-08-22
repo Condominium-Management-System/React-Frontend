@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Receipt, AlertCircle } from 'lucide-react'
 import type { Payment } from '../../services/types/payment'
-import { getPaymentByIdApi } from '../../services/api/apiClient'
+import { getPaymentByIdApi } from '../../services/api/paymentApi'
 
 interface PaymentDetailsModalProps {
   isOpen: boolean

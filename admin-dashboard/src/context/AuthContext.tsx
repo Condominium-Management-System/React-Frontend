@@ -3,13 +3,12 @@ import type { User, LoginCredentials } from '../services/types/auth'
 import {
   AuthContext,
 } from './AuthContextDefinition'
+import { loginApi, logoutApi } from '../services/api/authApi'
 import {
-  loginApi,
-  logoutApi,
   getStoredSession,
   saveStoredSession,
   clearStoredSession,
-} from '../services/api/apiClient'
+} from '../services/api/httpClient'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)

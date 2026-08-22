@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { X, Pencil, AlertCircle } from 'lucide-react'
 import type { User } from '../../services/types/auth'
 import type { UpdateUserPayload } from '../../services/types/user'
-import { updateUserApi, updateUserRoleApi } from '../../services/api/apiClient'
+import { updateUserApi, updateUserRoleApi } from '../../services/api/userApi'
+import { useAuth } from '../../context/useAuth'
 
 interface EditUserModalProps {
   isOpen: boolean
@@ -17,6 +18,7 @@ export const EditUserModal = ({
   onClose,
   onSuccess,
 }: EditUserModalProps) => {
+  const { user: authUser } = useAuth()
   const [fullName, setFullName] = useState(user.fullName || '')
   const [email, setEmail] = useState(user.email || '')
   const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || '')
@@ -48,7 +50,12 @@ export const EditUserModal = ({
     }
 
     const userId = user.id
-    const condoId = user.condoId || user.condoCode || '550e8400-e29b-41d4-a716-446655440001'
+    const targetCondoId = user.condoId || authUser?.condoId
+
+    if (!targetCondoId) {
+      setErrorMessage('Condominium ID is required to update user.')
+      return
+    }
 
     try {
       setIsSubmitting(true)
@@ -69,14 +76,14 @@ export const EditUserModal = ({
           fan: fan.trim(),
           isVerified,
         }
-        await updateUserApi(condoId, userId, payload)
+        await updateUserApi(targetCondoId, userId, payload)
       }
 
       // 2. Check if role changed
       const roleChanged = role !== user.role
 
       if (roleChanged) {
-        await updateUserRoleApi(condoId, userId, role)
+        await updateUserRoleApi(targetCondoId, userId, role)
       }
 
       onSuccess()

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 import type { Condo } from '../../services/types/condo'
-import { deleteCondoApi } from '../../services/api/apiClient'
+import { deleteCondoApi } from '../../services/api/condoApi'
 
 interface DeleteCondoModalProps {
   isOpen: boolean
