@@ -6,6 +6,7 @@ import {
   Users,
   CreditCard,
   User,
+  FileText,
   LogOut,
   X,
 } from 'lucide-react'
@@ -29,6 +30,12 @@ const navItems = [
     name: 'Condo Management',
     path: '/condos',
     icon: Building2,
+    superAdminOnly: true,
+  },
+  {
+    name: 'Maintenance Reports',
+    path: '/reports',
+    icon: FileText,
     superAdminOnly: true,
   },
   {

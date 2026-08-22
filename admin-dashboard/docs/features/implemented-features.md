@@ -48,3 +48,10 @@ This document provides a checklist of all features currently implemented and act
 - [x] **Profile Details Display**: User info banner, account status card, assigned condo info, and security overview card.
 - [x] **Edit Profile**: Modal form to update full name, email, phone, FAN ID, and profile photo avatar (`PATCH /api/auth/me`).
 - [x] **Change Password**: Modal form to update password and invalidate existing session.
+
+## 9. Maintenance Reports Management (`/reports`)
+- [x] **Maintenance Reports Table**: Table displaying ticket title, description, category, priority, reporter info, and status badges.
+- [x] **Multi-Criteria Filter**: Filter by search query, status (`reported`, `assigned`, `in_progress`, `resolved`, `closed`), category, and priority.
+- [x] **Report Details & Activity Modal**: Detailed modal view showing report metadata, attached photo, reporter info, status update form with resolution notes (`PUT /api/reports/:id/status`), and discussion thread with message response submission (`POST /api/reports/:id/response`).
+- [x] **Super Admin Route Guarding**: Restricted exclusively to Super Admins (`allowedRoles={['super_admin']}`).
+

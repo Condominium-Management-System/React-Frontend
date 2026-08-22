@@ -13,6 +13,8 @@ const getPageTitle = (pathname: string): string => {
       return 'Super Admin Dashboard'
     case '/condos':
       return 'Condo Management'
+    case '/reports':
+      return 'Maintenance Reports'
     case '/users':
       return 'User Management'
     case '/payments':
