@@ -7,6 +7,7 @@ import {
   CreditCard,
   User,
   FileText,
+  HeartHandshake,
   LogOut,
   X,
 } from 'lucide-react'
@@ -36,6 +37,12 @@ const navItems = [
     name: 'Maintenance Reports',
     path: '/reports',
     icon: FileText,
+    superAdminOnly: true,
+  },
+  {
+    name: 'Iddir Management',
+    path: '/iddirs',
+    icon: HeartHandshake,
     superAdminOnly: true,
   },
   {

@@ -55,3 +55,10 @@ This document provides a checklist of all features currently implemented and act
 - [x] **Report Details & Activity Modal**: Detailed modal view showing report metadata, attached photo, reporter info, status update form with resolution notes (`PUT /api/reports/:id/status`), and discussion thread with message response submission (`POST /api/reports/:id/response`).
 - [x] **Super Admin Route Guarding**: Restricted exclusively to Super Admins (`allowedRoles={['super_admin']}`).
 
+## 10. Iddir Management (`/iddirs`)
+- [x] **Iddir Directory Table**: Displays Iddir name, condominium info, started date, monthly contribution amount, member count, status badge, and creator admin info.
+- [x] **Multi-Criteria Search & Filter**: Search bar, status filter dropdown (`active`, `inactive`), and condominium filter selector.
+- [x] **Create Iddir Modal**: Modal form to register a new Iddir (`POST /api/iddirs/:condoId/iddirs`).
+- [x] **Super Admin Route Guarding**: Restricted exclusively to Super Admins (`allowedRoles={['super_admin']}`).
+
+
