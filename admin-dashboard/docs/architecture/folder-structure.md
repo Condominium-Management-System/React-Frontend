@@ -12,6 +12,7 @@ src/
 │   ├── payment/         # Payment stats, filters, table, details & action dialogs
 │   ├── profile/         # Profile cards & update modals
 │   ├── property/        # Property stats, filters, room table, and unit modals
+│   ├── report/          # Maintenance report filters, table, and details modal
 │   └── user/            # User filters, table, registration & edit modals
 ├── context/             # Global application state
 │   ├── AuthContext.tsx  # Session state provider & startup restore logic
@@ -24,6 +25,7 @@ src/
 │   ├── PaymentManagement/ # Payment management page
 │   ├── Profile/         # Admin profile page
 │   ├── PropertyLayout/  # Blocks & rooms management page
+│   ├── Reports/         # Maintenance reports management page
 │   └── UserManagement/  # User administration page
 ├── routes/              # Routing configuration
 │   └── AppRoutes.tsx    # App route map & role guards
@@ -35,6 +37,7 @@ src/
 │   │   ├── httpClient.ts   # Shared fetch client with 401 refresh interceptor
 │   │   ├── paymentApi.ts   # Payment management APIs
 │   │   ├── propertyApi.ts  # Property blocks & rooms APIs
+│   │   ├── reportApi.ts    # Maintenance report APIs
 │   │   └── userApi.ts      # User management & role APIs
 │   └── types/           # TypeScript interfaces & types
 │       ├── auth.ts      # User & session type definitions
@@ -42,6 +45,7 @@ src/
 │       ├── dashboard.ts # Analytics data response types
 │       ├── payment.ts   # Payment invoice & stat types
 │       ├── property.ts  # Block & room unit types
+│       ├── report.ts    # Maintenance report types
 │       └── user.ts      # User payload interfaces
 └── utils/               # Reusable utility functions
     └── roleHelpers.ts   # Role checking helpers (`isSuperAdmin`, `canAccessWebConsole`)

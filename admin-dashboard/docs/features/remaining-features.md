@@ -8,7 +8,6 @@ This document accurately catalogs features that are currently **missing**, **par
 
 | Feature | Status | Details |
 |:---|:---:|:---|
-| **Maintenance Report Administration Page** | ❌ Missing | While backend API endpoints and TypeScript interfaces (`Report`) exist, there is currently no maintenance management page or UI components in the admin console. |
 | **Equb Direct Administration Module** | ❌ Missing | Equb group creation, round management, and payout logging screens do not exist in the admin console (metrics are only summarized on the Dashboard). |
 | **Iddir Direct Administration Module** | ❌ Missing | Iddir membership administration and claim handling screens do not exist in the admin console (metrics are only summarized on the Dashboard). |
 | **Lost & Found Administration Module** | ❌ Missing | No UI components exist in the admin console for logging or resolving lost and found items. |

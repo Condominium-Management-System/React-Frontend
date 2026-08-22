@@ -27,6 +27,7 @@ The Admin Console is a single-page web application (SPA) designed for **Super Ad
 - [Login Page](pages/login.md) (`/login`)
 - [Dashboard](pages/dashboard.md) (`/dashboard`)
 - [Condominium Management](pages/condominium-management.md) (`/condos`)
+- [Maintenance Reports](pages/reports.md) (`/reports`)
 - [User Management](pages/user-management.md) (`/users`)
 - [Payment Management](pages/payment-management.md) (`/payments`)
 - [Property Layout](pages/property-layout.md) (`/blocks-rooms`)
@@ -41,6 +42,7 @@ The Admin Console is a single-page web application (SPA) designed for **Super Ad
 - [Condo API](api/condo-api.md) — Condominium CRUD endpoints.
 - [Payment API](api/payment-api.md) — Payment statistics, query filters, invoice details, and approval/rejection.
 - [Property API](api/property-api.md) — Property block and room unit CRUD endpoints.
+- [Report API](api/report-api.md) — Maintenance report endpoints.
 - [Dashboard API](api/dashboard-api.md) — Analytics summary endpoints.
 
 ---

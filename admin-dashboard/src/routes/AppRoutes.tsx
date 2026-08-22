@@ -8,6 +8,7 @@ import UserManagement from '../pages/UserManagement/UserManagement'
 import PaymentManagement from '../pages/PaymentManagement/PaymentManagement'
 import Profile from '../pages/Profile/Profile'
 import PropertyLayout from '../pages/PropertyLayout/PropertyLayout'
+import Reports from '../pages/Reports/Reports'
 
 export const AppRoutes = () => {
   return (
@@ -28,6 +29,7 @@ export const AppRoutes = () => {
           {/* Super Admin Only Routes */}
           <Route element={<ProtectedRoute allowedRoles={['super_admin']} />}>
             <Route path="/condos" element={<CondoManagement />} />
+            <Route path="/reports" element={<Reports />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
