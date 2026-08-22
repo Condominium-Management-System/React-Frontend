@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, UserPlus, AlertCircle } from 'lucide-react'
 import type { CreateUserPayload } from '../../services/types/user'
-import { createUserApi } from '../../services/api/apiClient'
+import { createUserApi } from '../../services/api/userApi'
+import { useAuth } from '../../context/useAuth'
 
 interface RegisterUserModalProps {
   isOpen: boolean
@@ -14,15 +15,22 @@ export const RegisterUserModal = ({
   onClose,
   onSuccess,
 }: RegisterUserModalProps) => {
+  const { user: authUser } = useAuth()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [fan, setFan] = useState('')
-  const [condoCode, setCondoCode] = useState('YEKONDO-001')
+  const [condoCode, setCondoCode] = useState(authUser?.condoCode || '')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (authUser?.condoCode) {
+      setCondoCode(authUser.condoCode)
+    }
+  }, [authUser?.condoCode])
 
   if (!isOpen) return null
 
@@ -65,7 +73,7 @@ export const RegisterUserModal = ({
       setPassword('')
       setPhoneNumber('')
       setFan('')
-      setCondoCode('YEKONDO-001')
+      setCondoCode(authUser?.condoCode || '')
 
       onSuccess()
       onClose()

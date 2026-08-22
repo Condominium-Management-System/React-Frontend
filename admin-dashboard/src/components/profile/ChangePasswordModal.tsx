@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
-import { updateProfileApi, clearStoredSession } from '../../services/api/apiClient'
+import { updateProfileApi } from '../../services/api/authApi'
+import { clearStoredSession } from '../../services/api/httpClient'
 import { useAuth } from '../../context/useAuth'
 
 interface ChangePasswordModalProps {

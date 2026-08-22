@@ -9,8 +9,8 @@ import type { Condo } from '../../services/types/condo'
 import {
   getPaymentsApi,
   getPaymentStatisticsApi,
-  getCondosApi,
-} from '../../services/api/apiClient'
+} from '../../services/api/paymentApi'
+import { getCondosApi } from '../../services/api/condoApi'
 import PaymentStats from '../../components/payment/PaymentStats'
 import PaymentFilters from '../../components/payment/PaymentFilters'
 import PaymentTable from '../../components/payment/PaymentTable'

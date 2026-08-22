@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Plus, AlertCircle, RefreshCw } from 'lucide-react'
 import type { Condo } from '../../services/types/condo'
-import { getCondosApi } from '../../services/api/apiClient'
+import { getCondosApi } from '../../services/api/condoApi'
 import CondoFilters from '../../components/condo/CondoFilters'
 import CondoTable from '../../components/condo/CondoTable'
 import RegisterCondoModal from '../../components/condo/RegisterCondoModal'

@@ -12,7 +12,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import type { DashboardData } from '../../services/types/dashboard'
-import { getDashboardApi } from '../../services/api/apiClient'
+import { getDashboardApi } from '../../services/api/dashboardApi'
 import StatCard from '../../components/dashboard/StatCard'
 import PropertyOverview from '../../components/dashboard/PropertyOverview'
 

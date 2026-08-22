@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { X, UserCheck, AlertCircle, Info } from 'lucide-react'
 import type { User } from '../../services/types/auth'
-import { updateProfileApi, getProfileApi } from '../../services/api/apiClient'
+import { updateProfileApi, getProfileApi } from '../../services/api/authApi'
 
 interface EditProfileModalProps {
   isOpen: boolean

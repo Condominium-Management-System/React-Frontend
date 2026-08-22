@@ -3,11 +3,8 @@ import { useAuth } from '../../context/useAuth'
 import { isSuperAdmin } from '../../utils/roleHelpers'
 import type { Condo } from '../../services/types/condo'
 import type { Block, Room } from '../../services/types/property'
-import {
-  getCondosApi,
-  getBlocksApi,
-  getRoomsApi,
-} from '../../services/api/apiClient'
+import { getCondosApi } from '../../services/api/condoApi'
+import { getBlocksApi, getRoomsApi } from '../../services/api/propertyApi'
 import PropertyStats from '../../components/property/PropertyStats'
 import PropertyFilters from '../../components/property/PropertyFilters'
 import RoomTable from '../../components/property/RoomTable'

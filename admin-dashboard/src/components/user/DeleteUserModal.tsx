@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 import type { User } from '../../services/types/auth'
-import { deleteUserApi } from '../../services/api/apiClient'
+import { deleteUserApi } from '../../services/api/userApi'
+import { useAuth } from '../../context/useAuth'
 
 interface DeleteUserModalProps {
   isOpen: boolean
@@ -16,6 +17,7 @@ export const DeleteUserModal = ({
   onClose,
   onSuccess,
 }: DeleteUserModalProps) => {
+  const { user: authUser } = useAuth()
   const [isDeleting, setIsDeleting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -23,12 +25,17 @@ export const DeleteUserModal = ({
 
   const handleDelete = async () => {
     const userId = user.id
-    const condoId = user.condoId || user.condoCode || '550e8400-e29b-41d4-a716-446655440001'
+    const targetCondoId = user.condoId || authUser?.condoId
+
+    if (!targetCondoId) {
+      setErrorMessage('Condominium ID is required to delete user.')
+      return
+    }
 
     try {
       setIsDeleting(true)
       setErrorMessage(null)
-      await deleteUserApi(condoId, userId)
+      await deleteUserApi(targetCondoId, userId)
       onSuccess()
       onClose()
     } catch (err) {

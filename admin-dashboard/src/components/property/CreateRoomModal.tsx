@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, DoorOpen, AlertCircle } from 'lucide-react'
-import { createRoomApi } from '../../services/api/apiClient'
+import { createRoomApi } from '../../services/api/propertyApi'
 import type { Block, Room, RoomStatus } from '../../services/types/property'
 
 interface CreateRoomModalProps {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { AlertCircle, RefreshCw, CheckCircle } from 'lucide-react'
 import type { User } from '../../services/types/auth'
-import { getProfileApi } from '../../services/api/apiClient'
+import { getProfileApi } from '../../services/api/authApi'
 import { useAuth } from '../../context/useAuth'
 import ProfileInfoCard from '../../components/profile/ProfileInfoCard'
 import AccountInfoCard from '../../components/profile/AccountInfoCard'

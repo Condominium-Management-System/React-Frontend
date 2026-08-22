@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { UserPlus, AlertCircle, RefreshCw } from 'lucide-react'
 import type { User } from '../../services/types/auth'
-import { getUsersApi } from '../../services/api/apiClient'
+import { getUsersApi } from '../../services/api/userApi'
 import UserFilters from '../../components/user/UserFilters'
 import UserTable from '../../components/user/UserTable'
 import RegisterUserModal from '../../components/user/RegisterUserModal'
@@ -39,7 +39,14 @@ export const UserManagement = () => {
     try {
       setIsLoading(true)
       setErrorMessage(null)
-      const data = await getUsersApi()
+
+      if (!isSuperAdminUser && !authUser?.condoId) {
+        setErrorMessage('Your account is not assigned to a condominium.')
+        setIsLoading(false)
+        return
+      }
+
+      const data = await getUsersApi(isSuperAdminUser ? undefined : authUser?.condoId)
       setUsers(data)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to load users.'
@@ -47,7 +54,7 @@ export const UserManagement = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [isSuperAdminUser, authUser?.condoId])
 
   useEffect(() => {
     fetchUsers()
