@@ -287,7 +287,6 @@ export const PropertyLayout = () => {
           setSelectedStatusFilter(e.target.value)
           setCurrentPage(1)
         }}
-        isSuper={isSuper}
         onAddBlock={() => setIsAddBlockOpen(true)}
         onAddRoom={() => setIsAddRoomOpen(true)}
       />
@@ -311,37 +310,35 @@ export const PropertyLayout = () => {
         isSuper={isSuper}
       />
 
-      {/* Modals (Condo Admin Only) */}
-      {!isSuper && (
-        <>
-          <CreateBlockModal
-            isOpen={isAddBlockOpen}
-            condoId={condoAdminCondoId}
-            onClose={() => setIsAddBlockOpen(false)}
-            onSuccess={handleBlockCreated}
-          />
+      {/* Creation & Status Modals */}
+      <CreateBlockModal
+        isOpen={isAddBlockOpen}
+        condoId={isSuper ? selectedCondoId : condoAdminCondoId}
+        condos={condos}
+        onClose={() => setIsAddBlockOpen(false)}
+        onSuccess={handleBlockCreated}
+      />
 
-          <CreateRoomModal
-            isOpen={isAddRoomOpen}
-            condoId={condoAdminCondoId}
-            blocks={blocks}
-            onClose={() => setIsAddRoomOpen(false)}
-            onSuccess={handleRoomCreated}
-          />
+      <CreateRoomModal
+        isOpen={isAddRoomOpen}
+        condoId={isSuper ? selectedCondoId : condoAdminCondoId}
+        condos={condos}
+        blocks={blocks}
+        onClose={() => setIsAddRoomOpen(false)}
+        onSuccess={handleRoomCreated}
+      />
 
-          {selectedUpdateRoom && (
-            <UpdateRoomStatusModal
-              isOpen={isUpdateStatusOpen}
-              condoId={condoAdminCondoId}
-              room={selectedUpdateRoom}
-              onClose={() => {
-                setIsUpdateStatusOpen(false)
-                setSelectedUpdateRoom(null)
-              }}
-              onSuccess={handleRoomUpdated}
-            />
-          )}
-        </>
+      {selectedUpdateRoom && (
+        <UpdateRoomStatusModal
+          isOpen={isUpdateStatusOpen}
+          condoId={selectedUpdateRoom.condoId || (isSuper ? selectedCondoId : condoAdminCondoId)}
+          room={selectedUpdateRoom}
+          onClose={() => {
+            setIsUpdateStatusOpen(false)
+            setSelectedUpdateRoom(null)
+          }}
+          onSuccess={handleRoomUpdated}
+        />
       )}
     </div>
   )

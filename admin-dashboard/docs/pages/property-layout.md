@@ -14,14 +14,14 @@ Manages condominium physical property layouts, including creating apartment bloc
 - **Property Layout Summary Header**: Stat cards displaying Total Blocks, Total Units, Free Units, Occupied Units, and Reserved/Maintenance Units.
 - **Search & Unit Status Filter**: Search bar, unit status filter dropdown, and action trigger buttons for *Add Block* and *Add Unit*.
 - **Room Units Table**: Displays room unit number, block number, floor, room type model, occupancy badge, and status update triggers.
-- **Create Block Modal**: Form modal to create a new property block (block number, number of rooms, number of floors).
-- **Create Room Modal**: Form modal to add a new room unit assigned to a block.
+- **Create Block Modal**: Form modal allowing both Super Admin and Condo Admin to create a new property block (block number, number of rooms, number of floors). Supports condo selection for Super Admin.
+- **Create Room Modal**: Form modal allowing both Super Admin and Condo Admin to add a new room unit assigned to a block. Supports dynamic condo and block selection for Super Admin.
 - **Update Room Status Modal**: Form modal to modify a unit's status (`free`, `occupied`, `reserved`, `maintenance`).
 - **Pagination**: Paginated room unit table.
 
 ## Components Used
 - `src/components/property/PropertyStats.tsx` — Property metrics summary.
-- `src/components/property/PropertyFilters.tsx` — Search, filter, and add buttons.
+- `src/components/property/PropertyFilters.tsx` — Search, filter, and action buttons.
 - `src/components/property/RoomTable.tsx` — Room units table.
 - `src/components/property/CreateBlockModal.tsx` — Block creation modal.
 - `src/components/property/CreateRoomModal.tsx` — Room unit creation modal.
@@ -37,20 +37,20 @@ Manages condominium physical property layouts, including creating apartment bloc
 
 ## Data Flow
 ```
-PropertyLayout.tsx loads condoId (from dropdown if super_admin, or user.condoId if condo_admin)
+PropertyLayout.tsx loads condoId (selectedCondoId if super_admin, or user.condoId if condo_admin)
                                 │
                                 ▼
 Fetches blocks (getBlocksApi) & rooms (getRoomsApi) in parallel
                                 │
                                 ▼
-Renders RoomTable -> User changes room status via UpdateRoomStatusModal
+Admin clicks "Add Block" or "Add Unit" -> Opens CreateBlockModal / CreateRoomModal
                                 │
                                 ▼
-Executes updateRoomStatusApi -> Refetches rooms & updates UI
+Modal submits payload -> Calls createBlockApi or createRoomApi -> Triggers fetchPropertyData()
 ```
 
 ## Important Role Rules
-- Super Admins can select any condominium from the condo filter dropdown.
+- Super Admins can select any condominium from the condo filter dropdown or pick a specific condo directly inside creation modals.
 - Condo Admins automatically manage their assigned condominium.
 
 ## Current Limitations

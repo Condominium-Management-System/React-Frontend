@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X, DoorOpen, AlertCircle } from 'lucide-react'
-import { createRoomApi } from '../../services/api/propertyApi'
+import { createRoomApi, getBlocksApi } from '../../services/api/propertyApi'
 import type { Block, Room, RoomStatus } from '../../services/types/property'
+import type { Condo } from '../../services/types/condo'
 
 interface CreateRoomModalProps {
   isOpen: boolean
   condoId: string
+  condos?: Condo[]
   blocks: Block[]
   selectedBlockId?: string
   onClose: () => void
@@ -15,14 +17,17 @@ interface CreateRoomModalProps {
 export const CreateRoomModal = ({
   isOpen,
   condoId,
-  blocks,
+  condos = [],
+  blocks: initialBlocks,
   selectedBlockId,
   onClose,
   onSuccess,
 }: CreateRoomModalProps) => {
-  const [blockId, setBlockId] = useState(
-    selectedBlockId || (blocks[0] ? blocks[0].id : '')
-  )
+  const isCondoSelectorNeeded = !condoId || condoId === 'ALL'
+
+  const [selectedCondoId, setSelectedCondoId] = useState<string>('')
+  const [availableBlocks, setAvailableBlocks] = useState<Block[]>(initialBlocks)
+  const [blockId, setBlockId] = useState<string>('')
   const [roomNumber, setRoomNumber] = useState('')
   const [floor, setFloor] = useState<number>(1)
   const [roomType, setRoomType] = useState('residential')
@@ -31,13 +36,62 @@ export const CreateRoomModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  // Fetch blocks for selected condo if Super Admin changes condo in modal
+  const fetchBlocksForCondo = useCallback(async (targetCondoId: string) => {
+    if (!targetCondoId) {
+      setAvailableBlocks([])
+      setBlockId('')
+      return
+    }
+    try {
+      const fetchedBlocks = await getBlocksApi(targetCondoId)
+      setAvailableBlocks(fetchedBlocks)
+      setBlockId(fetchedBlocks[0]?.id || '')
+    } catch {
+      setAvailableBlocks([])
+      setBlockId('')
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isOpen) {
+      setRoomNumber('')
+      setFloor(1)
+      setRoomType('residential')
+      setStatus('free')
+      setErrorMessage(null)
+
+      if (isCondoSelectorNeeded) {
+        const initialCondoId = condos[0]?.id || ''
+        setSelectedCondoId(initialCondoId)
+        fetchBlocksForCondo(initialCondoId)
+      } else {
+        setSelectedCondoId(condoId)
+        setAvailableBlocks(initialBlocks)
+        setBlockId(selectedBlockId || (initialBlocks[0] ? initialBlocks[0].id : ''))
+      }
+    }
+  }, [isOpen, condoId, isCondoSelectorNeeded, condos, initialBlocks, selectedBlockId, fetchBlocksForCondo])
+
   if (!isOpen) return null
+
+  const handleCondoChangeInModal = (newCondoId: string) => {
+    setSelectedCondoId(newCondoId)
+    fetchBlocksForCondo(newCondoId)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMessage(null)
 
-    const targetBlockId = blockId || selectedBlockId || (blocks[0] ? blocks[0].id : '')
+    const targetCondoId = isCondoSelectorNeeded ? selectedCondoId : condoId
+
+    if (!targetCondoId) {
+      setErrorMessage('Please select a condominium for this unit.')
+      return
+    }
+
+    const targetBlockId = blockId || selectedBlockId || (availableBlocks[0] ? availableBlocks[0].id : '')
 
     if (!targetBlockId) {
       setErrorMessage('Please select a block for this unit.')
@@ -51,7 +105,7 @@ export const CreateRoomModal = ({
 
     try {
       setIsSubmitting(true)
-      const created = await createRoomApi(condoId, {
+      const created = await createRoomApi(targetCondoId, {
         blockId: targetBlockId,
         roomNumber: roomNumber.trim(),
         floor: Number(floor) || 1,
@@ -107,19 +161,43 @@ export const CreateRoomModal = ({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Condominium Selector for Super Admin when ALL is selected */}
+          {isCondoSelectorNeeded && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">
+                Select Condominium *
+              </label>
+              <select
+                value={selectedCondoId}
+                onChange={(e) => handleCondoChangeInModal(e.target.value)}
+                className="w-full rounded-xl border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-xs md:text-sm text-gray-200 focus:border-[#D3AD32] focus:outline-none"
+              >
+                {condos.length > 0 ? (
+                  condos.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.condoName} ({c.condoCode})
+                    </option>
+                  ))
+                ) : (
+                  <option value="">No Condominiums Available</option>
+                )}
+              </select>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">
               Select Block *
             </label>
             <select
-              value={blockId || selectedBlockId || ''}
+              value={blockId}
               onChange={(e) => setBlockId(e.target.value)}
               className="w-full rounded-xl border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-xs md:text-sm text-gray-200 focus:border-[#D3AD32] focus:outline-none"
             >
-              {blocks.length > 0 ? (
-                blocks.map((b) => (
+              {availableBlocks.length > 0 ? (
+                availableBlocks.map((b) => (
                   <option key={b.id} value={b.id}>
-                    {b.blockName} {b.blockNumber ? `(${b.blockNumber})` : ''}
+                    {b.blockNo || b.blockName || b.blockNumber || 'Block'} {b.condoName ? `(${b.condoName})` : ''}
                   </option>
                 ))
               ) : (
