@@ -56,15 +56,19 @@ This document provides a checklist of all features currently implemented and act
 - [x] **Super Admin Route Guarding**: Restricted exclusively to Super Admins (`allowedRoles={['super_admin']}`).
 
 ## 10. Iddir Management (`/iddirs`)
-- [x] **Iddir Directory Table**: Displays Iddir name, condominium info, started date, monthly contribution amount, member count, status badge, and creator admin info.
+- [x] **Iddir Directory Table**: Displays Iddir name, condominium info, started date, monthly contribution amount, member count, status badge, creator admin info, and Actions column.
 - [x] **Multi-Criteria Search & Filter**: Search bar, status filter dropdown (`active`, `inactive`), and condominium filter selector.
 - [x] **Create Iddir Modal**: Modal form to register a new Iddir (`POST /api/iddirs/:condoId/iddirs`).
+- [x] **Edit Iddir Modal**: Modal form to update existing Iddir information and status (`PATCH /api/iddirs/:condoId/iddirs/:id`).
+- [x] **Delete Iddir Confirmation Modal**: Dialog to delete an Iddir with transactional cascade member cleanup (`DELETE /api/iddirs/:condoId/iddirs/:id`).
 - [x] **Super Admin Route Guarding**: Restricted exclusively to Super Admins (`allowedRoles={['super_admin']}`).
 
 ## 11. Iddir Members Management (`/iddir-members`)
-- [x] **Iddir Member Directory Table**: Displays member full name, contact info, condominium & unit details, assigned Iddir fund, joined date, and status badges (`active`, `inactive`, `suspended`).
+- [x] **Iddir Member Directory Table**: Displays member full name, contact info, condominium & unit details, assigned Iddir fund, joined date, status badges (`active`, `inactive`, `suspended`), and Actions column.
 - [x] **Multi-Criteria Search & Condo Filter**: Search bar, status filter dropdown, and condominium selector dropdown.
 - [x] **Register Member Modal**: Modal form to enroll a resident user into a community Iddir fund (`POST /api/iddir-members`).
+- [x] **Edit Member Modal**: Modal form to update member status (`PATCH /api/iddir-members/:id`).
+- [x] **Delete Member Confirmation Modal**: Dialog to safely remove a member (`DELETE /api/iddir-members/:id`).
 - [x] **Super Admin Route Guarding**: Restricted exclusively to Super Admins (`allowedRoles={['super_admin']}`).
 
 

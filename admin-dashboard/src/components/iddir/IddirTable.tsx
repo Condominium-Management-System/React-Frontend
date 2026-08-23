@@ -1,4 +1,4 @@
-import { HeartHandshake, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Calendar, Users, DollarSign } from 'lucide-react'
+import { HeartHandshake, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Calendar, Users, DollarSign, Edit2, Trash2 } from 'lucide-react'
 import type { Iddir } from '../../services/types/iddir'
 
 interface IddirTableProps {
@@ -12,6 +12,8 @@ interface IddirTableProps {
   endIndexDisplay: number
   onPageChange: (page: number) => void
   onRetry: () => void
+  onEditIddir: (iddir: Iddir) => void
+  onDeleteIddir: (iddir: Iddir) => void
 }
 
 export const IddirTable = ({
@@ -25,6 +27,8 @@ export const IddirTable = ({
   endIndexDisplay,
   onPageChange,
   onRetry,
+  onEditIddir,
+  onDeleteIddir,
 }: IddirTableProps) => {
   return (
     <div className="rounded-xl border border-gray-800/80 bg-[#0F131C] shadow-sm overflow-hidden select-none">
@@ -53,7 +57,7 @@ export const IddirTable = ({
         </div>
       ) : (
         <div className="w-full overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[750px]">
+          <table className="w-full text-left border-collapse min-w-[850px]">
             <thead>
               <tr className="border-b border-gray-800 bg-gray-900/60 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">
                 <th className="py-3.5 px-4 md:px-5">IDDIR NAME</th>
@@ -63,6 +67,7 @@ export const IddirTable = ({
                 <th className="py-3.5 px-4 md:px-5">MEMBERS</th>
                 <th className="py-3.5 px-4 md:px-5">STATUS</th>
                 <th className="py-3.5 px-4 md:px-5">CREATED BY</th>
+                <th className="py-3.5 px-4 md:px-5 text-right">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800/60 text-xs md:text-sm">
@@ -125,11 +130,33 @@ export const IddirTable = ({
                     <td className="py-3.5 px-4 md:px-5 text-gray-400">
                       {iddir.createdBy?.fullName || 'System Admin'}
                     </td>
+                    <td className="py-3.5 px-4 md:px-5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onEditIddir(iddir)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-gray-800 bg-gray-900 px-2.5 py-1 text-xs font-semibold text-gray-300 transition-colors hover:border-gray-700 hover:text-white cursor-pointer"
+                          title="Edit Iddir"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteIddir(iddir)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/20 cursor-pointer"
+                          title="Delete Iddir"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-gray-400">
+                  <td colSpan={8} className="py-12 text-center text-gray-400">
                     <div className="flex flex-col items-center justify-center">
                       <HeartHandshake className="h-10 w-10 text-gray-600 mb-2" />
                       <p className="text-sm font-semibold text-gray-300">

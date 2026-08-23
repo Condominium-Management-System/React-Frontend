@@ -6,6 +6,8 @@ import { getCondosApi } from '../../services/api/condoApi'
 import { getIddirMembersApi } from '../../services/api/iddirApi'
 import IddirMemberTable from '../../components/iddir/IddirMemberTable'
 import RegisterIddirMemberModal from '../../components/iddir/RegisterIddirMemberModal'
+import EditIddirMemberModal from '../../components/iddir/EditIddirMemberModal'
+import DeleteIddirMemberModal from '../../components/iddir/DeleteIddirMemberModal'
 
 const ITEMS_PER_PAGE = 8
 
@@ -23,8 +25,12 @@ export const IddirMembersManagement = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Modal State
+  // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [editingMember, setEditingMember] = useState<IddirMember | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [deletingMember, setDeletingMember] = useState<IddirMember | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   // Fetch Condos
   const fetchCondos = useCallback(async () => {
@@ -98,6 +104,18 @@ export const IddirMembersManagement = () => {
 
   const handleMemberCreated = (newMember: IddirMember) => {
     setMembers((prev) => [newMember, ...prev])
+    fetchMembers()
+  }
+
+  const handleMemberUpdated = (updatedMember: IddirMember) => {
+    setMembers((prev) =>
+      prev.map((item) => (item.id === updatedMember.id ? { ...item, ...updatedMember } : item))
+    )
+    fetchMembers()
+  }
+
+  const handleMemberDeleted = (deletedMemberId: string) => {
+    setMembers((prev) => prev.filter((item) => item.id !== deletedMemberId))
     fetchMembers()
   }
 
@@ -194,14 +212,42 @@ export const IddirMembersManagement = () => {
         endIndexDisplay={endIndexDisplay}
         onPageChange={setCurrentPage}
         onRetry={fetchMembers}
+        onEditMember={(member) => {
+          setEditingMember(member)
+          setIsEditModalOpen(true)
+        }}
+        onDeleteMember={(member) => {
+          setDeletingMember(member)
+          setIsDeleteModalOpen(true)
+        }}
       />
 
-      {/* 4. Add Member Modal */}
+      {/* 4. Modals */}
       <RegisterIddirMemberModal
         isOpen={isAddModalOpen}
         condos={condos}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={handleMemberCreated}
+      />
+
+      <EditIddirMemberModal
+        isOpen={isEditModalOpen}
+        member={editingMember}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setEditingMember(null)
+        }}
+        onSuccess={handleMemberUpdated}
+      />
+
+      <DeleteIddirMemberModal
+        isOpen={isDeleteModalOpen}
+        member={deletingMember}
+        onClose={() => {
+          setIsDeleteModalOpen(false)
+          setDeletingMember(null)
+        }}
+        onSuccess={handleMemberDeleted}
       />
     </div>
   )
