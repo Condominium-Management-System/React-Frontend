@@ -6,7 +6,6 @@ Super Admin web dashboard frontend for the HomeAxis Condominium Management Syste
 
 - **React** 19
 - **TypeScript**
-- **Vite**
 - **Tailwind CSS** v4
 - **React Router** v7
 
