@@ -10,6 +10,7 @@ import Profile from '../pages/Profile/Profile'
 import PropertyLayout from '../pages/PropertyLayout/PropertyLayout'
 import Reports from '../pages/Reports/Reports'
 import IddirManagement from '../pages/IddirManagement/IddirManagement'
+import IddirMembersManagement from '../pages/IddirMembersManagement/IddirMembersManagement'
 
 export const AppRoutes = () => {
   return (
@@ -32,6 +33,7 @@ export const AppRoutes = () => {
             <Route path="/condos" element={<CondoManagement />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/iddirs" element={<IddirManagement />} />
+            <Route path="/iddir-members" element={<IddirMembersManagement />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -23,6 +23,7 @@ src/
 │   ├── CondoManagement/ # Condominium management page
 │   ├── Dashboard/       # System analytics dashboard page
 │   ├── IddirManagement/ # Iddir community funds page
+│   ├── IddirMembersManagement/ # Iddir membership management page
 │   ├── Login/           # Login authentication page
 │   ├── PaymentManagement/ # Payment management page
 │   ├── Profile/         # Admin profile page

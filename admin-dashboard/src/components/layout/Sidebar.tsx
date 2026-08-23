@@ -8,6 +8,7 @@ import {
   User,
   FileText,
   HeartHandshake,
+  UserCheck,
   LogOut,
   X,
 } from 'lucide-react'
@@ -43,6 +44,12 @@ const navItems = [
     name: 'Iddir Management',
     path: '/iddirs',
     icon: HeartHandshake,
+    superAdminOnly: true,
+  },
+  {
+    name: 'Iddir Members',
+    path: '/iddir-members',
+    icon: UserCheck,
     superAdminOnly: true,
   },
   {

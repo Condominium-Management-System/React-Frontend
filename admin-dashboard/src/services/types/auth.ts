@@ -10,6 +10,8 @@ export interface User {
   condoName?: string
   isVerified?: boolean
   profilePhoto?: string
+  block?: string
+  roomNo?: string
 }
 
 export interface UserProfileResponseData {

@@ -17,6 +17,8 @@ const getPageTitle = (pathname: string): string => {
       return 'Maintenance Reports'
     case '/iddirs':
       return 'Iddir Management'
+    case '/iddir-members':
+      return 'Iddir Members Management'
     case '/users':
       return 'User Management'
     case '/payments':
