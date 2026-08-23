@@ -29,6 +29,7 @@ The Admin Console is a single-page web application (SPA) designed for **Super Ad
 - [Condominium Management](pages/condominium-management.md) (`/condos`)
 - [Maintenance Reports](pages/reports.md) (`/reports`)
 - [Iddir Management](pages/iddir-management.md) (`/iddirs`)
+- [Iddir Members Management](pages/iddir-members-management.md) (`/iddir-members`)
 - [User Management](pages/user-management.md) (`/users`)
 - [Payment Management](pages/payment-management.md) (`/payments`)
 - [Property Layout](pages/property-layout.md) (`/blocks-rooms`)

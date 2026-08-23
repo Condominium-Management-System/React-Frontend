@@ -23,3 +23,19 @@ Handles community Iddir retrieval and creation endpoints.
 - **Request Body**: `CreateIddirPayload` (`condoId`, `name`, `startedDate`, `contributionAmount`).
 - **Response**: Created `Iddir` object.
 - **Used By**: `src/components/iddir/CreateIddirModal.tsx`.
+
+### 3. `getIddirMembersApi(condoId?, iddirId?)`
+- **HTTP Method**: `GET`
+- **Endpoint**: `/api/iddir-members` or `/api/iddir-members/:condoId`
+- **Purpose**: Fetches system-wide Iddir members (or filtered by condominium / Iddir fund).
+- **Parameters**: `condoId?: string`, `iddirId?: string`.
+- **Response**: `IddirMember[]`.
+- **Used By**: `src/pages/IddirMembersManagement/IddirMembersManagement.tsx`.
+
+### 4. `addIddirMemberApi(payload)`
+- **HTTP Method**: `POST`
+- **Endpoint**: `/api/iddir-members`
+- **Purpose**: Registers a resident user into a community Iddir fund.
+- **Request Body**: `AddIddirMemberPayload` (`userId`, `iddirId`).
+- **Response**: Created `IddirMember` object.
+- **Used By**: `src/components/iddir/RegisterIddirMemberModal.tsx`.

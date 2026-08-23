@@ -61,4 +61,11 @@ This document provides a checklist of all features currently implemented and act
 - [x] **Create Iddir Modal**: Modal form to register a new Iddir (`POST /api/iddirs/:condoId/iddirs`).
 - [x] **Super Admin Route Guarding**: Restricted exclusively to Super Admins (`allowedRoles={['super_admin']}`).
 
+## 11. Iddir Members Management (`/iddir-members`)
+- [x] **Iddir Member Directory Table**: Displays member full name, contact info, condominium & unit details, assigned Iddir fund, joined date, and status badges (`active`, `inactive`, `suspended`).
+- [x] **Multi-Criteria Search & Condo Filter**: Search bar, status filter dropdown, and condominium selector dropdown.
+- [x] **Register Member Modal**: Modal form to enroll a resident user into a community Iddir fund (`POST /api/iddir-members`).
+- [x] **Super Admin Route Guarding**: Restricted exclusively to Super Admins (`allowedRoles={['super_admin']}`).
+
+
 
