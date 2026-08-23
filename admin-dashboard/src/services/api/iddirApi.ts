@@ -1,8 +1,10 @@
 import type {
   Iddir,
   CreateIddirPayload,
+  UpdateIddirPayload,
   IddirMember,
   AddIddirMemberPayload,
+  UpdateIddirMemberPayload,
 } from '../types/iddir'
 import { fetchWithAuth } from './httpClient'
 
@@ -50,6 +52,41 @@ export const createIddirApi = async (
   }
 
   return (json.data?.iddir || json.data || json) as Iddir
+}
+
+// Update Iddir (PATCH /api/iddirs/:condoId/iddirs/:iddirId)
+export const updateIddirApi = async (
+  condoId: string,
+  iddirId: string,
+  payload: UpdateIddirPayload
+): Promise<Iddir> => {
+  const response = await fetchWithAuth(`/api/iddirs/${condoId}/iddirs/${iddirId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to update Iddir.')
+  }
+
+  return (json.data?.iddir || json.data || json) as Iddir
+}
+
+// Delete Iddir (DELETE /api/iddirs/:condoId/iddirs/:iddirId)
+export const deleteIddirApi = async (
+  condoId: string,
+  iddirId: string
+): Promise<void> => {
+  const response = await fetchWithAuth(`/api/iddirs/${condoId}/iddirs/${iddirId}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    const json = await response.json().catch(() => ({}))
+    throw new Error(json.message || 'Failed to delete Iddir.')
+  }
 }
 
 // Get Iddir Members (GET /api/iddir-members or GET /api/iddir-members/:condoId)
@@ -105,4 +142,47 @@ export const addIddirMemberApi = async (
   }
 
   return (json.data?.member || json.data || json) as IddirMember
+}
+
+// Update Iddir Member Status (PATCH /api/iddir-members/:condoId/:memberId or /api/iddir-members/:memberId)
+export const updateIddirMemberApi = async (
+  condoId: string | undefined,
+  memberId: string,
+  payload: UpdateIddirMemberPayload
+): Promise<IddirMember> => {
+  const endpoint = condoId && condoId !== 'ALL'
+    ? `/api/iddir-members/${condoId}/${memberId}`
+    : `/api/iddir-members/${memberId}`
+
+  const response = await fetchWithAuth(endpoint, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    throw new Error(json.message || 'Failed to update Iddir member status.')
+  }
+
+  return (json.data?.member || json.data || json) as IddirMember
+}
+
+// Delete Iddir Member (DELETE /api/iddir-members/:condoId/:memberId or /api/iddir-members/:memberId)
+export const deleteIddirMemberApi = async (
+  condoId: string | undefined,
+  memberId: string
+): Promise<void> => {
+  const endpoint = condoId && condoId !== 'ALL'
+    ? `/api/iddir-members/${condoId}/${memberId}`
+    : `/api/iddir-members/${memberId}`
+
+  const response = await fetchWithAuth(endpoint, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    const json = await response.json().catch(() => ({}))
+    throw new Error(json.message || 'Failed to remove member from Iddir.')
+  }
 }

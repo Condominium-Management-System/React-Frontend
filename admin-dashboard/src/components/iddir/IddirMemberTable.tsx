@@ -1,4 +1,4 @@
-import { UserCheck, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Calendar, Mail, Phone, Home } from 'lucide-react'
+import { UserCheck, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Calendar, Mail, Phone, Home, Edit2, Trash2 } from 'lucide-react'
 import type { IddirMember } from '../../services/types/iddir'
 
 interface IddirMemberTableProps {
@@ -12,6 +12,8 @@ interface IddirMemberTableProps {
   endIndexDisplay: number
   onPageChange: (page: number) => void
   onRetry: () => void
+  onEditMember: (member: IddirMember) => void
+  onDeleteMember: (member: IddirMember) => void
 }
 
 export const IddirMemberTable = ({
@@ -25,6 +27,8 @@ export const IddirMemberTable = ({
   endIndexDisplay,
   onPageChange,
   onRetry,
+  onEditMember,
+  onDeleteMember,
 }: IddirMemberTableProps) => {
   return (
     <div className="rounded-xl border border-gray-800/80 bg-[#0F131C] shadow-sm overflow-hidden select-none">
@@ -53,7 +57,7 @@ export const IddirMemberTable = ({
         </div>
       ) : (
         <div className="w-full overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left border-collapse min-w-[850px]">
             <thead>
               <tr className="border-b border-gray-800 bg-gray-900/60 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">
                 <th className="py-3.5 px-4 md:px-5">MEMBER NAME</th>
@@ -62,6 +66,7 @@ export const IddirMemberTable = ({
                 <th className="py-3.5 px-4 md:px-5">IDDIR FUND</th>
                 <th className="py-3.5 px-4 md:px-5">JOINED DATE</th>
                 <th className="py-3.5 px-4 md:px-5">STATUS</th>
+                <th className="py-3.5 px-4 md:px-5 text-right">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800/60 text-xs md:text-sm">
@@ -146,11 +151,33 @@ export const IddirMemberTable = ({
                         {member.status ? member.status.toUpperCase() : 'ACTIVE'}
                       </span>
                     </td>
+                    <td className="py-3.5 px-4 md:px-5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onEditMember(member)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-gray-800 bg-gray-900 px-2.5 py-1 text-xs font-semibold text-gray-300 transition-colors hover:border-gray-700 hover:text-white cursor-pointer"
+                          title="Edit Member Status"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteMember(member)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/20 cursor-pointer"
+                          title="Remove Member"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-gray-400">
+                  <td colSpan={7} className="py-12 text-center text-gray-400">
                     <div className="flex flex-col items-center justify-center">
                       <UserCheck className="h-10 w-10 text-gray-600 mb-2" />
                       <p className="text-sm font-semibold text-gray-300">

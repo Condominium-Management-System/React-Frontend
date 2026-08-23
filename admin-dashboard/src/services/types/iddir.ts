@@ -88,3 +88,14 @@ export interface AddIddirMemberPayload {
   userId: string
   iddirId: string
 }
+
+export interface UpdateIddirPayload {
+  name?: string
+  startedDate?: string
+  contributionAmount?: number
+  status?: 'active' | 'inactive'
+}
+
+export interface UpdateIddirMemberPayload {
+  status: 'active' | 'inactive' | 'suspended'
+}

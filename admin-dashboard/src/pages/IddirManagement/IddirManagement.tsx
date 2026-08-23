@@ -6,6 +6,8 @@ import { getCondosApi } from '../../services/api/condoApi'
 import { getIddirsApi } from '../../services/api/iddirApi'
 import IddirTable from '../../components/iddir/IddirTable'
 import CreateIddirModal from '../../components/iddir/CreateIddirModal'
+import EditIddirModal from '../../components/iddir/EditIddirModal'
+import DeleteIddirModal from '../../components/iddir/DeleteIddirModal'
 
 const ITEMS_PER_PAGE = 8
 
@@ -23,8 +25,12 @@ export const IddirManagement = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Modal State
+  // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [editingIddir, setEditingIddir] = useState<Iddir | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [deletingIddir, setDeletingIddir] = useState<Iddir | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   // Fetch Condos
   const fetchCondos = useCallback(async () => {
@@ -96,6 +102,18 @@ export const IddirManagement = () => {
 
   const handleIddirCreated = (newIddir: Iddir) => {
     setIddirs((prev) => [newIddir, ...prev])
+    fetchIddirs()
+  }
+
+  const handleIddirUpdated = (updatedIddir: Iddir) => {
+    setIddirs((prev) =>
+      prev.map((item) => (item.id === updatedIddir.id ? { ...item, ...updatedIddir } : item))
+    )
+    fetchIddirs()
+  }
+
+  const handleIddirDeleted = (deletedIddirId: string) => {
+    setIddirs((prev) => prev.filter((item) => item.id !== deletedIddirId))
     fetchIddirs()
   }
 
@@ -191,14 +209,42 @@ export const IddirManagement = () => {
         endIndexDisplay={endIndexDisplay}
         onPageChange={setCurrentPage}
         onRetry={fetchIddirs}
+        onEditIddir={(iddir) => {
+          setEditingIddir(iddir)
+          setIsEditModalOpen(true)
+        }}
+        onDeleteIddir={(iddir) => {
+          setDeletingIddir(iddir)
+          setIsDeleteModalOpen(true)
+        }}
       />
 
-      {/* 4. Add Iddir Modal */}
+      {/* 4. Modals */}
       <CreateIddirModal
         isOpen={isAddModalOpen}
         condos={condos}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={handleIddirCreated}
+      />
+
+      <EditIddirModal
+        isOpen={isEditModalOpen}
+        iddir={editingIddir}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setEditingIddir(null)
+        }}
+        onSuccess={handleIddirUpdated}
+      />
+
+      <DeleteIddirModal
+        isOpen={isDeleteModalOpen}
+        iddir={deletingIddir}
+        onClose={() => {
+          setIsDeleteModalOpen(false)
+          setDeletingIddir(null)
+        }}
+        onSuccess={handleIddirDeleted}
       />
     </div>
   )
