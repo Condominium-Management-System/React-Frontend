@@ -1,0 +1,22 @@
+# Feature Mapping Matrix (React Frontend)
+
+This master matrix connects every implemented feature in the React frontend to its corresponding pages, components, API services, and state storage.
+
+---
+
+## Feature-to-File Matrix
+
+| Feature | Role Access | Page Component(s) | Child Components / Modals | API Service / Endpoint | State Storage |
+|---|---|---|---|---|---|
+| **Authentication & Session** | Public / All | [`pages/auth/Login.jsx`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/auth/Login.jsx) | Toast notifications | `api.auth.login` in `axiosConfig.js` | `AuthContext` + `localStorage` (`accessToken`, `user`) |
+| **Super Admin Dashboard** | `super_admin` | [`pages/super-admin/Dashboard.jsx`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/super-admin/Dashboard.jsx) | `StatsCard`, Recharts `AreaChart`, `PieChart` | `api.condos.getAll`<br>`api.users.getAll`<br>`api.payments.getStatistics` | Local page state (`stats`, `loading`) |
+| **Condo Admin Dashboard** | `condo_admin` | [`pages/condo-admin/Dashboard.jsx`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/condo-admin/Dashboard.jsx) | `StatsCard` | `api.users.getAll`<br>`api.payments.getStatistics`<br>`api.reports.getAdminAll`<br>`api.announcements.getAll` | Local page state (`stats`, `loading`) |
+| **Condominium Management** | `super_admin` | [`pages/super-admin/Condos.jsx`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/super-admin/Condos.jsx) | `StatsCard`, `StyledTableContainer`, Dialog Form | `api.condos.getAll`<br>`api.condos.create`<br>`api.condos.update`<br>`api.condos.delete`<br>`api.condos.toggleStatus` | Local page state (`condos`, `searchTerm`, `filterType`, `formData`) |
+| **Master User Management** | `super_admin` | [`pages/super-admin/Users.jsx`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/super-admin/Users.jsx) | `RegisterUserModal.jsx`<br>`EditUserModal.jsx` | `api.users.getAll`<br>`api.users.verify`<br>`api.users.delete`<br>`fetch('/api/auth/register')` | Local page state (`users`, `filterType`, `searchTerm`) |
+| **Resident Management** | `condo_admin` | [`pages/condo-admin/Residents.jsx`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/condo-admin/Residents.jsx) | Detail Dialog, Register Dialog, Tabs | Mock data + `api.users` endpoints | Local page state (`residents`, `filterStatus`, `formData`) |
+| **Maintenance Reports** | `super_admin`<br>`condo_admin` | `pages/super-admin/Reports.jsx`<br>`pages/condo-admin/Reports.jsx` | Filter bars, details modal, response dialog | `reportService.js`<br>`api.reports.getAdminAll`<br>`api.reports.updateStatus`<br>`api.reports.addResponse` | Local page state (`reports`, `statusFilter`) |
+| **Payment Tracking** | `super_admin`<br>`condo_admin` | `pages/super-admin/Payments.jsx`<br>`pages/condo-admin/Payments.jsx` | KPI stats cards, transaction tables, action dialogs | `api.payments.getAll`<br>`api.payments.getStatistics`<br>`api.payments.approve`<br>`api.payments.reject` | Local page state (`payments`, `stats`, `filterType`) |
+| **Announcements** | `super_admin`<br>`condo_admin` | `pages/super-admin/Announcements.jsx`<br>`pages/condo-admin/Announcements.jsx` | Broadcast dialog, category filters | `announcementService.js`<br>`api.announcements.getAll`<br>`api.announcements.create` | Local page state (`announcements`, `stats`) |
+| **Lost & Found** | `condo_admin` | [`pages/condo-admin/LostFound.jsx`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/condo-admin/LostFound.jsx) | Item log modal, claim verification dialog | `lostFoundService.js`<br>`api.lostFound.getAll`<br>`api.lostFound.create`<br>`api.lostFound.verifyClaim` | Local page state (`items`, `stats`) |
+| **Business Promotions** | `super_admin` | [`pages/super-admin/Promotions.jsx`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/super-admin/Promotions.jsx) | Review modal, campaign status chips | `promotionService.js`<br>`api.promotions.getAll`<br>`api.promotions.review` | Local page state (`promotions`, `stats`) |
+| **Equb & Iddir Management** | `super_admin`<br>`condo_admin` | `pages/super-admin/EqubIddirManagement.jsx`<br>`pages/condo-admin/EqubManagement.jsx`<br>`pages/condo-admin/IddirManagement.jsx` | Detail dialog, Tabs, fund cards | `api.equbs.getAll`<br>`api.iddirs.getAll`<br>`api.equbs.create`<br>`api.iddirs.create` | Local page state (`condoData`, `stats`) |

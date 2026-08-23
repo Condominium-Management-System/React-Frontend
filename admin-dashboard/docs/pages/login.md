@@ -1,46 +1,39 @@
-# Login Page
+# Page: Login (`/login`)
 
-## Purpose
-Authenticates administrative users (Super Admins and Condo Admins) entering the HomeAxis web console.
+## 1. Purpose
+The authentication gateway for administrators to access the HomeAxis management system.
 
-## Route
-`/login`
+## 2. Route
+- Path: `/login`
+- Access: Public
+- Layout: Standalone page container
 
-## Who Can Access It
-Public (unauthenticated users). Authenticated users are automatically redirected to `/dashboard`.
+## 3. State & Hooks
+- `email`: string
+- `password`: string
+- `loading`: boolean
+- `error`: string (error message)
+- `useAuth()`: provides `login()` function
+- `useNavigate()`: redirects user post-login
 
-## Main Features
-- Email and password input fields.
-- Password visibility toggle (Show/Hide).
-- *Remember Me* checkbox option (toggles session storage between `localStorage` and `sessionStorage`).
-- Form validation and inline error message display.
-- Form submission loading state indicator.
+## 4. API Calls
+- `api.auth.login({ email, password })`: `POST /api/auth/login`
 
-## Components Used
-- Internal form elements within `src/pages/Login/Login.tsx`.
-
-## API Calls
-- `loginApi(credentials)` from `src/services/api/authApi.ts` (`POST /api/auth/login`).
-
-## Data Flow
+## 5. Data Flow
 ```
-User enters credentials & submits form
-                 │
-                 ▼
-  Login.tsx calls AuthContext.login()
-                 │
-                 ▼
-  authApi.ts executes POST /api/auth/login
-                 │
-                 ▼
-  On success: Session saved to storage, AuthContext updated
-                 │
-                 ▼
-  User navigated to /dashboard
+User Enters Credentials → Clicks Login
+  ↓
+login({ email, password }) in AuthContext
+  ↓
+api.auth.login(credentials) in axiosConfig.js
+  ↓
+Server responds with token & user JSON
+  ↓
+Stored in localStorage
+  ↓
+Navigate to /super-admin/dashboard or /condo-admin/dashboard
 ```
 
-## Important Role Rules
-- If credentials belong to a non-admin account (e.g. `resident`), login succeeds at the API level but `<ProtectedRoute />` intercepts the user post-login and displays an Access Denied barrier.
-
-## Current Limitations
-- None.
+## 6. Important Files
+- [`src/pages/auth/Login.jsx`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/auth/Login.jsx)
+- [`src/pages/auth/Login.css`](file:///c:/Users/hp/OneDrive/Desktop/insa_projects/CMS/react/src/pages/auth/Login.css)
