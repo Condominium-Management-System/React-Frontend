@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D3AD32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b08822;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="50" fill="url(#grad)"/>
+  <!-- Building shape forming H -->
+  <!-- Left pillar -->
+  <rect x="25" y="25" width="15" height="50" rx="2" fill="white"/>
+  <!-- Right pillar -->
+  <rect x="60" y="25" width="15" height="50" rx="2" fill="white"/>
+  <!-- Middle bar -->
+  <rect x="25" y="42" width="50" height="16" rx="2" fill="white"/>
+  <!-- Windows on left pillar -->
+  <rect x="28" y="30" width="9" height="8" rx="1" fill="#D3AD32"/>
+  <rect x="28" y="42" width="9" height="8" rx="1" fill="#D3AD32"/>
+  <rect x="28" y="55" width="9" height="8" rx="1" fill="#D3AD32"/>
+  <!-- Windows on right pillar -->
+  <rect x="63" y="30" width="9" height="8" rx="1" fill="#D3AD32"/>
+  <rect x="63" y="42" width="9" height="8" rx="1" fill="#D3AD32"/>
+  <rect x="63" y="55" width="9" height="8" rx="1" fill="#D3AD32"/>
+</svg>
