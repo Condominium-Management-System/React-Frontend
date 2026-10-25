@@ -1,5 +1,5 @@
 // src/pages/condo-admin/Announcements.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -28,29 +28,17 @@ import {
   FormControl,
   InputLabel,
   CircularProgress,
-  Avatar,
-  useTheme,
   Zoom,
   Tooltip,
   Switch,
   FormControlLabel,
-  Divider,
-  Alert,
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Refresh as RefreshIcon,
   Add as AddIcon,
   Announcement as AnnouncementIcon,
   Pin as PinIcon,
   CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  Close as CloseIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
-  Upload as UploadIcon,
-  Image as ImageIcon,
   Schedule as ScheduleIcon,
   Warning as WarningIcon,
   Celebration as CelebrationIcon,
@@ -116,8 +104,6 @@ const StatsCard = styled(Card)(({ theme, color }) => ({
 }));
 
 const Announcements = () => {
-  const theme = useTheme();
-  
   // State
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -155,7 +141,7 @@ const Announcements = () => {
   });
 
   // Fetch announcements
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = useCallback(async () => {
     try {
       setLoading(true);
       const data = await announcementService.getAll({ limit: 100 });
@@ -172,11 +158,11 @@ const Announcements = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAnnouncements();
-  }, []);
+  }, [fetchAnnouncements]);
 
   // Filter announcements
   const filteredAnnouncements = announcements.filter(ann => {
@@ -641,7 +627,7 @@ const Announcements = () => {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredAnnouncements.length}
+          count={totalItems || filteredAnnouncements.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
