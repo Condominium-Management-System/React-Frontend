@@ -6,7 +6,7 @@ export const reportService = {
     try {
       // First get all condos
       const condosRes = await api.condos.getAll();
-      const condos = condosRes.data.data || [];
+      const condos = condosRes.data?.data || condosRes.data || [];
       
       // Then get reports for each condo
       const reportStats = await Promise.all(
@@ -17,7 +17,7 @@ export const reportService = {
               condoId: condo.id,
               limit: 100 // Get all reports
             });
-            const reports = reportsRes.data.data?.items || [];
+            const reports = reportsRes.data?.data?.items || (Array.isArray(reportsRes.data?.data) ? reportsRes.data.data : []);
             
             // Calculate statistics
             const total = reports.length;
