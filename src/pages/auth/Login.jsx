@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,34 +20,28 @@ const Login = () => {
 
     try {
       const result = await login({ email, password });
-      console.log('✅ Login result:', result);
       
       if (result.success) {
-        toast.success('Login successful! 🎉');
-        
-        // Check role and redirect accordingly
         const userRole = result.user?.role;
-        console.log('👤 User role:', userRole);
+        toast.success(`Welcome back, ${result.user?.fullName || 'User'}! 🎉`);
         
         setTimeout(() => {
           if (userRole === 'super_admin') {
             navigate('/super-admin/dashboard');
           } else if (userRole === 'condo_admin') {
             navigate('/condo-admin/dashboard');
-          } else if (userRole === 'guard') {
-            navigate('/guard/dashboard');
           } else {
             navigate('/resident/dashboard');
           }
-        }, 1000);
+        }, 800);
       } else {
-        setError(result.message || 'Login failed');
+        setError(result.message || 'Login failed. Please check your credentials.');
         toast.error(result.message || 'Login failed. Please check your credentials.');
         setLoading(false);
       }
-    } catch (error) {
-      console.error('❌ Login error:', error);
-      setError('Network error. Please try again.');
+    } catch (err) {
+      console.error('❌ Login error:', err);
+      setError('Network error. Please check if the server is running.');
       toast.error('Network error. Please check if the server is running.');
       setLoading(false);
     }
@@ -57,16 +51,17 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>🏢 Home Axis</h1>
-          <p>Admin Dashboard </p>
+          <h1>🏢 HomeAxis</h1>
+          <p>Sign in to your account</p>
         </div>
-        
+
         {error && (
           <div className="error-message">
-            ❌ {error}
+            <span>⚠️</span>
+            <span>{error}</span>
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label>Email Address</label>
@@ -76,6 +71,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
+              autoComplete="email"
             />
           </div>
 
@@ -87,17 +83,21 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
+              autoComplete="current-password"
             />
           </div>
 
           <button type="submit" disabled={loading} className="login-btn">
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
-        
+        <div className="auth-switch">
+          <span>Don't have an account?</span>
+          <Link to="/register">Register</Link>
+        </div>
       </div>
-      <ToastContainer position="top-right" />
+      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </div>
   );
 };

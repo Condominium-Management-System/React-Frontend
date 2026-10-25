@@ -106,6 +106,7 @@ export const api = {
     search: (search, condoId) => condoId ? axiosInstance.get(`/users/${condoId}/search`, { params: { search } }) : axiosInstance.get('/users/search', { params: { search } }),
   },
   reports: {
+    getAll: (params) => axiosInstance.get('/reports', { params }),
     getMy: () => axiosInstance.get('/reports/my'),
     getAdminAll: (params) => axiosInstance.get('/reports/admin/all', { params }),
     getById: (id) => axiosInstance.get(`/reports/${id}`),

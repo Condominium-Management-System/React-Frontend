@@ -1,121 +1,293 @@
-# HomeAxis Frontend — Next-Gen Condominium Management Portal & Resident Experience
-
-A modern, responsive, mobile-first web portal for the **HomeAxis Condominium Management System**, built with React 18, Material UI (MUI), and real-time Socket.IO communication.
+> 🌐 **Full-Stack Quick Navigation:**
+> - ⚙️ **Backend API (Repository):** [https://github.com/Condominium-Management-System/backend](https://github.com/Condominium-Management-System/backend)
+> - 🚀 **Live Deployed Application:** [https://homeaxiz.vercel.app](https://homeaxiz.vercel.app)
+> - 💻 **Frontend Web Portal (Repository):** [https://github.com/Condominium-Management-System/React-Frontend](https://github.com/Condominium-Management-System/React-Frontend)
 
 ---
 
-## 📱 Portals & Key Features
+# HomeAxis Frontend Portal — Enterprise Condominium Management System
 
-### 1. 🏡 Resident Portal (Mobile-First Experience)
-- **Fixed Bottom Navigation Bar**: Clean, thumb-friendly navigation bar on mobile viewports covering **Home**, **Payments**, **Lost & Found**, **Promotions**, and **Alerts**, safely positioned above device safe areas.
-- **Verified Financial Status Cards**:
-  - **Equb Rotating Savings**: Displays active enrolled group names, pending approval badges, and verified ETB contribution sums.
-  - **Iddir Mutual Aid**: Displays membership status and verified contribution totals.
-  - **Payout Destination**: Displays configured payout provider and masked account number (`Ethio Telecom Telebirr (••••2212)`) with direct tap-to-configure routing.
-- **Automatic Payment Routing**: Official Condominium Destination card that automatically displays the verified condominium destination account based on the selected payment method (CBE, Telebirr, etc.).
-- **Community Modules**: Lost & Found reporting, promotions marketplace, incident reporting, and real-time announcements.
+A modern, responsive, mobile-first web application powering the **HomeAxis Condominium Management System**, built with React 18, Material UI (MUI v5), Axios with automatic JWT interceptors, and real-time Socket.IO communication.
 
-### 2. 🏢 Condominium Admin Console
-- **Condominium Treasury & Accounts Hub**: Real-time banner displaying operational funds scoped to the condominium code, primary account designation, and an interactive **Account Transaction History Modal** displaying all inflows and outflows.
-- **Resident & Unit Management**: Building blocks, apartment rooms, occupancy management, and resident profile verification.
-- **Community Finance Management**: Equb rounds, winner lotteries, payout disbursements, and Iddir mutual aid emergency claims.
-- **Payment Approvals**: Pending resident payment queue with one-click verification and automated destination balance crediting.
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Material UI](https://img.shields.io/badge/MUI-v5-007FFF?logo=mui&logoColor=white)](https://mui.com/)
+[![React Router](https://img.shields.io/badge/React_Router-v6-CA4245?logo=react-router&logoColor=white)](https://reactrouter.com/)
+[![Deployed on Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?logo=vercel&logoColor=white)](https://homeaxiz.vercel.app)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-Client-010101?logo=socket.io&logoColor=white)](https://socket.io/)
 
-### 3. 👑 Super Administrator Console
-- **System-Wide Revenue Performance**: Real-time aggregated revenue metrics calculated across all condominiums.
-- **Multi-Condominium Treasury Console**: Overview of registered accounts across all condominiums with filter dropdown by condominium and official account registration dialog.
-- **Platform Governance**: Condominium registration, building structure management, and system-wide broadcast management.
+---
+
+## 📑 Table of Contents
+- [📌 Overview](#-overview)
+- [🔗 Ecosystem & Project Resources](#-ecosystem--project-resources)
+- [👥 User Roles & Interface Capabilities](#-user-roles--interface-capabilities)
+- [✨ Core Features](#-core-features)
+- [🛠️ Technology Stack](#%EF%B8%8F-technology-stack)
+- [📂 Project Structure](#-project-structure)
+- [🏗️ Architecture & Component Hierarchy](#%EF%B8%8F-architecture--component-hierarchy)
+- [1️⃣ Clone the Repository](#1%EF%B8%8F%E2%83%A3-clone-the-repository)
+- [2️⃣ Install Dependencies](#2%EF%B8%8F%E2%83%A3-install-dependencies)
+- [⚙️ Environment Configuration](#%EF%B8%8F-environment-configuration)
+- [▶️ Running the Application](#%EF%B8%8F-running-the-application)
+- [📱 Portals & Key Interfaces](#-portals--key-interfaces)
+  - [1. 🏡 Resident Portal (Mobile-First Experience)](#1--resident-portal-mobile-first-experience)
+  - [2. 🏢 Condominium Admin Console](#2--condominium-admin-console)
+  - [3. 👑 Super Administrator Console](#3--super-administrator-console)
+- [🔒 Security & Protected Routing](#-security--protected-routing)
+- [🧠 Key Design Decisions](#-key-design-decisions)
+- [🔮 Future Enhancements](#-future-enhancements)
+- [📌 Assumptions and Known Limitations](#-assumptions-and-known-limitations)
+- [👨‍💻 Authors & Lead Engineers](#-authors--lead-engineers)
+
+---
+
+## 📌 Overview
+The **HomeAxis Frontend** is a single-page application (SPA) created to meet the modern operational and community lifestyle needs of Ethiopian condominium residents and property management teams.
+
+Traditional condominium management systems either cater exclusively to administrative desk workers or fail to reflect local financial customs like **Equb** and **Iddir**. HomeAxis bridges this gap by offering:
+- A **mobile-first Resident Portal** that residents can use directly from their smartphones to verify savings contributions, pay monthly maintenance dues without typing bank accounts, and participate in community mutual aid.
+- An **operational Condominium Admin Console** providing real-time treasury monitoring, resident roster management, digital Equb lottery rounds, and double-entry transaction auditing.
+- A **Super Administrator Console** offering nationwide condominium governance and consolidated revenue analytics across all registered condominiums.
+
+---
+
+## 🔗 Ecosystem & Project Resources
+| Resource | URL | Description |
+|:---|:---|:---|
+| **Live Deployed Web Application** | [https://homeaxiz.vercel.app](https://homeaxiz.vercel.app) | Production web portal (Vercel) |
+| **Frontend GitHub Repository** | [Condominium-Management-System/React-Frontend](https://github.com/Condominium-Management-System/React-Frontend) | React 18 single-page application |
+| **Backend GitHub Repository** | [Condominium-Management-System/backend](https://github.com/Condominium-Management-System/backend) | Express.js & PostgreSQL REST API |
+| **Local Web Server** | `http://localhost:3000` | Local frontend development runtime |
+
+---
+
+## 👥 User Roles & Interface Capabilities
+The frontend features declarative role-based routing that serves all roles through clean, unified login (`/login`) and registration (`/register`) views:
+
+1. 👑 **Super Administrator (`super_admin`)**:
+   - Accesses `/super-admin/dashboard` to monitor all registered condominiums across Ethiopia.
+   - Views aggregated operational funds across all condominium treasury accounts.
+   - Provisions new condominium complexes, manages administrators, and broadcasts nationwide notices.
+
+2. 🏢 **Condominium Administrator (`condo_admin`)**:
+   - Accesses `/condo-admin/dashboard` scoped strictly to their assigned condominium code.
+   - Registers and manages condominium operational source/destination accounts (CBE, Telebirr).
+   - Approves resident fee payments with automated treasury balance crediting.
+   - Manages building blocks, apartment units, resident approvals, and Equb/Iddir workflows.
+
+3. 🏡 **Resident (`resident`)**:
+   - Accesses `/resident/dashboard` optimized for mobile screens and thumbs.
+   - Views verified contribution totals for Equb and Iddir memberships.
+   - Submits condominium dues using automated payment destination routing.
+   - Configures personal payout accounts (CBE, Telebirr) for receiving Equb lottery pots and community aid.
+   - Submits maintenance tickets, posts community promotions, and checks property notices.
+
+4. 🛡️ **Security Guard (`guard`)**:
+   - Accesses `/resident/dashboard` facilities interfaces to manage gate clearance, log security alerts, and inspect lost & found items.
+
+---
+
+## ✨ Core Features
+- **Automated Treasury Payment Routing**: When making payments, the system resolves the official condominium destination account (CBE or Telebirr) and displays it as read-only information, completely removing resident typing errors.
+- **Verified Financial Status Cards**: Live cards displaying enrolled Equb savings groups, active Iddir mutual aid standing, and masked payout accounts (`Ethio Telecom Telebirr (••••2212)`).
+- **Resident Self-Registration**: Direct self-registration (`/register`) with dynamic condominium selection populated directly from live backend records.
+- **Condominium Treasury Hub**: Real-time balance banner, account status badges, and an interactive **Account Transaction History Modal**.
+- **Super Admin Revenue Aggregator**: Real-time calculation of total operational funds across all registered condominiums in Ethiopia.
+- **Digital Community Engines**: Full interactive UI for Equb lottery winner selection and Iddir emergency aid claim submissions.
+- **Responsive Mobile Navigation**: Dedicated thumb-friendly bottom navigation bar for mobile viewports.
 
 ---
 
 ## 🛠️ Technology Stack
-
-| Layer | Technology |
+| Technology | Purpose |
 |:---|:---|
-| **Framework & UI** | React 18 / Material UI (MUI v5) / Emotion |
-| **Routing** | React Router v6 |
-| **HTTP Client** | Axios (with Bearer Token Interceptors) |
-| **Real-Time Client**| Socket.IO Client |
-| **Icons & Design** | Material Icons / Custom SVG Icons |
-| **Responsive Design**| Mobile-First Breakpoints & MUI Grid System |
+| [React 18](https://react.dev/) | Frontend component framework |
+| [React Router v6](https://reactrouter.com/) | Client-side routing and declarative protected route guards |
+| [Material UI (MUI v5)](https://mui.com/) | Accessible, modern enterprise UI components & design system |
+| [Emotion](https://emotion.sh/) | CSS-in-JS styled component styling |
+| [Axios](https://axios-http.com/) | HTTP client with bearer token request/response interceptors |
+| [Socket.IO Client](https://socket.io/) | Real-time WebSocket event listeners and messaging |
+| [React Toastify](https://fkhadra.github.io/react-toastify/) | Interactive toast feedback for payments, alerts, and errors |
+| [Recharts](https://recharts.org/) | Responsive SVG financial analytics and revenue charts |
 
 ---
 
-## 👥 Authors & Lead Engineers
-
-| Role | Engineer | Contact & Profiles |
-|:---|:---|:---|
-| **Frontend Lead Engineer**| **Singiten Beshada** | [singiten2127@gmail.com](mailto:singiten2127@gmail.com) • [GitHub: @singiten](https://github.com/singiten) |
-| **Backend Lead Engineer** | **Shanbel Dires** | [shanbeldires7@gmail.com](mailto:shanbeldires7@gmail.com) |
-
----
-
-## ⚙️ Environment Configuration
-
-Create a `.env` file in the project root:
-
-```env
-# Backend API Base URL
-REACT_APP_API_URL=http://localhost:3000/api
-
-# Real-Time WebSocket Server URL
-REACT_APP_SOCKET_URL=http://localhost:3000
-
-# Port Configuration
-PORT=3001
+## 📂 Project Structure
+```
+React-Frontend/
+├── public/
+│   ├── index.html             # Application HTML shell
+│   └── favicon.svg            # HomeAxis brand icon
+├── src/
+│   ├── api/
+│   │   └── axiosConfig.js     # Axios instance, bearer interceptor, and endpoint catalog
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── Navbar.jsx     # Top application header with profile & notifications
+│   │   │   ├── Sidebar.jsx    # Collapsible desktop navigation bar
+│   │   │   └── MobileNav.jsx  # Fixed thumb-friendly mobile bottom navigation
+│   │   ├── chat/              # Real-time discussion modal components
+│   │   └── user/              # User registration and profile editing dialogs
+│   ├── context/
+│   │   ├── AuthContext.jsx    # Global authentication state, tokens, and role definitions
+│   │   └── ThemeContext.jsx   # Dark / Light theme provider
+│   ├── layouts/
+│   │   ├── SuperAdminLayout.jsx # Super Admin application container & navigation
+│   │   ├── CondoAdminLayout.jsx # Condominium Admin application container
+│   │   └── ResidentLayout.jsx   # Resident & Guard mobile-first container
+│   ├── pages/
+│   │   ├── auth/
+│   │   │   ├── Login.jsx      # Clean unified sign-in page
+│   │   │   ├── Login.css      # Dark-themed responsive authentication styling
+│   │   │   └── Register.jsx   # Resident registration with dynamic condo lookup
+│   │   ├── super-admin/       # Nationwide condominium governance dashboards
+│   │   ├── condo-admin/       # Condominium treasury, units, and Equb/Iddir management
+│   │   ├── resident/          # Mobile resident dashboard, dues payments, and savings
+│   │   └── common/            # Shared building blocks and apartment units views
+│   ├── routes/
+│   │   ├── AppRoutes.jsx      # Declarative RBAC route mapping and redirects
+│   │   └── AppRoutes.css      # Route layout styling
+│   ├── services/              # API consumption service adapters
+│   ├── App.jsx                # Root application component
+│   └── index.jsx              # React DOM render entry point
+├── package.json               # NPM scripts and dependencies
+└── README.md                  # Project documentation
 ```
 
 ---
 
-## 🚀 Getting Started & Available Scripts
+## 🏗️ Architecture & Component Hierarchy
+```
+                             ┌───────────────────────┐
+                             │       App.jsx         │
+                             └───────────┬───────────┘
+                                         │
+                                         ▼
+                             ┌───────────────────────┐
+                             │     AuthContext       │
+                             │ (JWT, Role, User State)
+                             └───────────┬───────────┘
+                                         │
+                                         ▼
+                             ┌───────────────────────┐
+                             │     AppRoutes.jsx     │
+                             └───────────┬───────────┘
+                 ┌───────────────────────┼───────────────────────┐
+                 │                       │                       │
+                 ▼                       ▼                       ▼
+      ┌──────────────────────┐┌──────────────────────┐┌──────────────────────┐
+      │   SuperAdminLayout   ││   CondoAdminLayout   ││    ResidentLayout    │
+      └──────────┬───────────┘└──────────┬───────────┘└──────────┬───────────┘
+                 │                       │                       │
+      ┌──────────┴───────────┐┌──────────┴───────────┐┌──────────┴───────────┐
+      │ • Condos Governance  ││ • Treasury Accounts  ││ • Mobile Dashboard   │
+      │ • Revenue Statistics ││ • Payment Queue      ││ • Auto Fee Payment   │
+      │ • Building Blocks    ││ • Equb / Iddir Ops   ││ • Equb & Mutual Aid  │
+      │ • User Management    ││ • Resident Roster    ││ • Payout Accounts    │
+      └──────────────────────┘└──────────────────────┘└──────────────────────┘
+```
 
-### 1. Install Dependencies
+---
+
+## 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/Condominium-Management-System/React-Frontend.git
+cd React-Frontend
+```
+
+## 2️⃣ Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Run Development Server
-```bash
-npm start
-```
-Runs the application on [http://localhost:3001](http://localhost:3001).
+---
 
-### 3. Build for Production
-```bash
-npm run build
-```
-Bundles production-ready assets into the `build/` folder with optimal minification and asset hashing.
+## ⚙️ Environment Configuration
+Create a `.env` file in the project root:
 
-### 4. Run Test Suite
-```bash
-npm test
+```env
+# Backend API Base URL
+REACT_APP_API_URL="http://127.0.0.1:3000/api"
+
+# WebSocket Server URL
+REACT_APP_SOCKET_URL="http://127.0.0.1:3000"
 ```
 
 ---
 
-## 📁 Directory Structure
+## ▶️ Running the Application
 
+### Development Server:
+```bash
+npm start
 ```
-src/
-├── api/                    # Axios client configuration & API service contracts
-├── components/             # Reusable UI components
-│   ├── chat/              # Real-time chat & messaging widgets
-│   ├── common/            # Sidebar, Header, Mobile Bottom Nav, Stats Cards
-│   └── user/              # User modal dialogs & forms
-├── context/               # Global state contexts (AuthContext, SocketContext)
-├── layouts/               # Role-based shell layouts
-│   ├── ResidentLayout.jsx # Mobile-first resident shell with bottom navigation
-│   ├── CondoAdminLayout.jsx # Condominium management shell with sidebar
-│   └── SuperAdminLayout.jsx # Platform oversight shell
-├── pages/                 # Role-specific view components
-│   ├── resident/          # Dashboard, Payments, Accounts, Reports, Lost & Found
-│   ├── condo-admin/       # Dashboard, Accounts, Residents, Blocks, Equb, Iddir
-│   └── super-admin/       # Dashboard, Accounts, Condos, Users, Payments
-├── routes/                # Role-based route guard and route definitions (AppRoutes.jsx)
-└── services/              # API interaction abstractions
+Starts the local development server at `http://localhost:3000` with hot-module reloading.
+
+### Production Build:
+```bash
+npm run build
 ```
+Generates an optimized production bundle in the `build/` directory with code splitting and minification.
+
+---
+
+## 📱 Portals & Key Interfaces
+
+### 1. 🏡 Resident Portal (Mobile-First Experience)
+- **Verified Financial Status Cards**: Shows real-time enrollment in Equb rotating credit, approved Iddir mutual aid, and configured CBE/Telebirr payout accounts.
+- **Automated Payment Routing**: When making condominium fee payments, the verified condominium destination account (CBE account number or Telebirr merchant ID) is automatically populated as read-only information.
+- **Payout Destination Hub (`/resident/accounts`)**: Residents configure authorized CBE or Telebirr accounts for receiving Equb lottery pots and community disbursements.
+- **Thumb-Friendly Bottom Bar**: Seamless access on mobile screens to **Home**, **Payments**, **Lost & Found**, **Promotions**, and **Notices**.
+
+### 2. 🏢 Condominium Admin Console
+- **Treasury & Operational Funds**: Displays active funds scoped to the condominium, primary account designation, and transaction logs.
+- **Account Transaction History Modal**: Displays all inflows (resident dues, service charges) and outflows (maintenance, payouts) linked to the account.
+- **Payment Verification Queue**: Admin approves or rejects pending submissions, automatically crediting the destination balance upon approval.
+- **Equb & Iddir Operations**: Admin creates rotating cycles, approves member applications, runs lotteries, and disburses payouts.
+
+### 3. 👑 Super Administrator Console
+- **System-Wide Revenue Aggregation**: Live calculation of total operational funds across all registered condominiums in Ethiopia.
+- **Multi-Condominium Account Directory**: Overview of registered accounts across all condominiums with filter dropdown by condominium.
+- **Platform Governance**: Condominium registration, building structure management, and platform-wide announcements.
+
+---
+
+## 🔒 Security & Protected Routing
+1. **Stateless JWT Storage**: Tokens are stored in secure browser storage and attached automatically to outgoing API requests via Axios request interceptors (`Authorization: Bearer <token>`).
+2. **Declarative Route Guards**: `AppRoutes.jsx` verifies authentication status and user roles, preventing unauthorized cross-role access.
+3. **Automatic Redirection**: Any unauthenticated attempt to access dashboard routes immediately redirects to `/login`.
+
+---
+
+## 🧠 Key Design Decisions
+- **Unified Clean Authentication**: Single `/login` and `/register` views prevent confusion between resident and administrative access.
+- **Material UI with Responsive Breakpoints**: High-density desktop grids adapt smoothly into mobile cards and swipeable sheets for resident mobile use.
+- **Safe Response Normalization**: API response adapters safely unpack paginated objects (`data?.data?.items || data?.data || []`), ensuring UI stability even with unassigned or newly registered users.
+
+---
+
+## 🔮 Future Enhancements
+- Progressive Web App (PWA) offline caching and home screen install banner.
+- Push notifications via Service Workers for instant emergency alerts.
+- Multi-language localization (Amharic, Afaan Oromoo, Tigrinya, English).
+
+---
+
+## 📌 Assumptions and Known Limitations
+- External banking transfers are simulated through the Zero-Balance Simulator engine.
+- Browser local storage is used for token persistence.
+
+---
+
+## 👨‍💻 Authors & Lead Engineers
+
+| Role | Engineer |  |
+|:---|:---|:---|
+| **Frontend Lead Engineer**| **Singiten Beshada** | 
+| **Backend Lead Engineer** | **Shanbel Dires** | 
+| **UI/UX Designer** | **Saron Tesfahun** | 
 
 ---
 
 ## 📄 License
-Proprietary software for HomeAxis Condominium Management System. All rights reserved.
+Proprietary software developed for the HomeAxis Condominium Management System. All rights reserved.

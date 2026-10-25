@@ -3,86 +3,143 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 24px 16px;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1b2a 100%);
+  box-sizing: border-box;
 }
 
 .login-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(22, 27, 34, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
-  padding: 50px;
+  padding: 42px 36px;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+}
+
+.login-card.register-card {
+  max-width: 560px;
+  padding: 38px 32px;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 35px;
+  margin-bottom: 28px;
 }
 
 .login-header h1 {
   color: #D3AD32;
-  font-size: 32px;
-  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
 }
 
 .login-header p {
-  color: #8899aa;
+  color: #8b949e;
   font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.error-message {
+  background: rgba(248, 81, 73, 0.12);
+  border: 1px solid rgba(248, 81, 73, 0.35);
+  color: #ff7b72;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .login-form .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 520px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
 
 .login-form label {
   display: block;
-  color: #ccd6e0;
-  font-size: 13px;
+  color: #c9d1d9;
+  font-size: 12.5px;
   font-weight: 600;
   margin-bottom: 6px;
 }
 
-.login-form input {
+.login-form input,
+.login-form select {
   width: 100%;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
-  color: #fff;
-  font-size: 14px;
-  transition: all 0.3s;
+  color: #f0f6fc;
+  font-size: 13.5px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
-.login-form input:focus {
+.login-form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+.login-form select option {
+  background: #161b22;
+  color: #f0f6fc;
+}
+
+.login-form input:focus,
+.login-form select:focus {
   outline: none;
   border-color: #D3AD32;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 3px rgba(211, 173, 50, 0.15);
 }
 
 .login-form input::placeholder {
-  color: #556677;
+  color: #6e7681;
 }
 
 .login-btn {
   width: 100%;
-  padding: 14px;
+  padding: 13px;
   background: #D3AD32;
   border: none;
   border-radius: 10px;
-  color: #0a0a1a;
-  font-size: 16px;
+  color: #0b0f19;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
-  margin-top: 10px;
+  transition: all 0.25s ease;
+  margin-top: 8px;
 }
 
 .login-btn:hover {
   background: #e4c043;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(211, 173, 50, 0.3);
+  box-shadow: 0 8px 25px rgba(211, 173, 50, 0.35);
 }
 
 .login-btn:disabled {
@@ -91,20 +148,24 @@
   transform: none;
 }
 
-.login-footer {
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+.auth-switch {
   text-align: center;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  color: #8b949e;
 }
 
-.login-footer p {
-  color: #667788;
-  font-size: 12px;
-  margin: 3px 0;
-}
-
-.login-footer p:first-child {
-  color: #8899aa;
+.auth-switch a {
+  color: #D3AD32;
   font-weight: 600;
+  text-decoration: none;
+  margin-left: 6px;
+  transition: color 0.2s;
+}
+
+.auth-switch a:hover {
+  color: #f1cf5b;
+  text-decoration: underline;
 }
