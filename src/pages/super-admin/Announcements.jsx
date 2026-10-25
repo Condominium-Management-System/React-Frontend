@@ -1,5 +1,5 @@
 // src/pages/super-admin/Announcements.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Checkbox,
   ListItemText,
@@ -29,8 +29,6 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  CircularProgress,
-  useTheme,
   Zoom,
   Tooltip,
   Switch,
@@ -43,13 +41,6 @@ import {
   Add as AddIcon,
   Announcement as AnnouncementIcon,
   Pin as PinIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  Close as CloseIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
-  Schedule as ScheduleIcon,
   Warning as WarningIcon,
   Celebration as CelebrationIcon,
   Event as EventIcon,
@@ -113,7 +104,6 @@ const StatsCard = styled(Card)(({ theme, color }) => ({
 }));
 
 const Announcements = () => {
-  const theme = useTheme();
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -161,7 +151,7 @@ const Announcements = () => {
     }
   };
 
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = useCallback(async () => {
     try {
       setLoading(true);
       const params = { limit: 100 };
@@ -180,16 +170,15 @@ const Announcements = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [condoFilter]);
 
   useEffect(() => {
     fetchCondos();
-    fetchAnnouncements();
   }, []);
 
   useEffect(() => {
     fetchAnnouncements();
-  }, [condoFilter]);
+  }, [fetchAnnouncements]);
 
   const filteredAnnouncements = announcements.filter(ann => {
     const matchesSearch = ann.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -304,6 +293,14 @@ const Announcements = () => {
       default: return 'rgba(211, 173, 50, 0.1)';
     }
   };
+
+  if (loading && announcements.length === 0) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Typography sx={{ color: '#D3AD32' }}>Loading announcements...</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#f8f9fa', minHeight: '100vh' }}>
@@ -470,7 +467,7 @@ const Announcements = () => {
             )}
           </TableBody>
         </Table>
-        <TablePagination rowsPerPageOptions={[5, 10, 25]} component="div" count={filteredAnnouncements.length} rowsPerPage={rowsPerPage} page={page} onPageChange={(e, p) => setPage(p)} onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }} />
+        <TablePagination rowsPerPageOptions={[5, 10, 25]} component="div" count={totalItems || filteredAnnouncements.length} rowsPerPage={rowsPerPage} page={page} onPageChange={(e, p) => setPage(p)} onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }} />
       </StyledTableContainer>
 
       {/* Create/Edit Modal with REAL Dynamic Condominium Selector */}
