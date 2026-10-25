@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
+import { reportService } from '../../services/reportService';
 import 'react-toastify/dist/ReactToastify.css';
 
 const StatsCard = styled(Card)(({ theme }) => ({
@@ -61,85 +62,6 @@ const STATUS_COLORS = {
   closed: '#6b7280',
 };
 
-// Mock Data - Matches backend schema
-const MOCK_REPORT_STATS = [
-  {
-    condoId: '1',
-    condoName: 'Ye Kondominium 01',
-    condoCode: 'YEKONDO-001',
-    total: 12,
-    reported: 3,
-    assigned: 2,
-    inProgress: 4,
-    resolved: 2,
-    closed: 1,
-    categories: {
-      plumbing: 3,
-      electrical: 2,
-      structural: 1,
-      security: 4,
-      noise: 2,
-      other: 0,
-    },
-    priorities: {
-      emergency: 2,
-      high: 4,
-      medium: 3,
-      low: 3,
-    },
-  },
-  {
-    condoId: '2',
-    condoName: 'Sunrise Condominium',
-    condoCode: 'SUNRISE-001',
-    total: 8,
-    reported: 1,
-    assigned: 3,
-    inProgress: 2,
-    resolved: 2,
-    closed: 0,
-    categories: {
-      plumbing: 1,
-      electrical: 2,
-      structural: 0,
-      security: 3,
-      noise: 1,
-      other: 1,
-    },
-    priorities: {
-      emergency: 0,
-      high: 2,
-      medium: 4,
-      low: 2,
-    },
-  },
-  {
-    condoId: '3',
-    condoName: 'Green Valley Towers',
-    condoCode: 'GV-002',
-    total: 5,
-    reported: 2,
-    assigned: 0,
-    inProgress: 1,
-    resolved: 1,
-    closed: 1,
-    categories: {
-      plumbing: 2,
-      electrical: 1,
-      structural: 0,
-      security: 0,
-      noise: 1,
-      other: 1,
-    },
-    priorities: {
-      emergency: 1,
-      high: 1,
-      medium: 2,
-      low: 1,
-    },
-  },
-];
-
 const Reports = () => {
   const theme = useTheme();
   const [loading, setLoading] = useState(true);
@@ -161,24 +83,19 @@ const Reports = () => {
   const fetchReportStats = async () => {
     try {
       setLoading(true);
+      const stats = await reportService.getSuperAdminStats();
+      setReportStats(stats || []);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const stats = MOCK_REPORT_STATS;
-      setReportStats(stats);
-      
-      const totals = stats.reduce((acc, condo) => ({
-        total: acc.total + condo.total,
-        reported: acc.reported + condo.reported,
-        assigned: acc.assigned + condo.assigned,
-        inProgress: acc.inProgress + condo.inProgress,
-        resolved: acc.resolved + condo.resolved,
-        closed: acc.closed + condo.closed,
+      const totals = (stats || []).reduce((acc, condo) => ({
+        total: acc.total + (condo.total || 0),
+        reported: acc.reported + (condo.reported || 0),
+        assigned: acc.assigned + (condo.assigned || 0),
+        inProgress: acc.inProgress + (condo.inProgress || 0),
+        resolved: acc.resolved + (condo.resolved || 0),
+        closed: acc.closed + (condo.closed || 0),
       }), { total: 0, reported: 0, assigned: 0, inProgress: 0, resolved: 0, closed: 0 });
       
       setTotalStats(totals);
-      
     } catch (error) {
       console.error('Error fetching report stats:', error);
       toast.error('Failed to fetch report stats');
