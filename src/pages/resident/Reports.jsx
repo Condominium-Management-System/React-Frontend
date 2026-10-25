@@ -1,5 +1,5 @@
 // src/pages/resident/Reports.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/axiosConfig';
 import { toast } from 'react-toastify';
@@ -29,7 +29,7 @@ const ResidentReports = () => {
   });
   const [photoFile, setPhotoFile] = useState(null);
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.reports.getMy();
@@ -47,11 +47,11 @@ const ResidentReports = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [urlReportId]);
 
   useEffect(() => {
     fetchReports();
-  }, [urlReportId]);
+  }, [fetchReports]);
 
   useEffect(() => {
     const action = searchParams.get('action');
