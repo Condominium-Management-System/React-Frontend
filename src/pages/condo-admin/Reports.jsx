@@ -59,9 +59,12 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon,
   Warning as WarningIcon,
+  Group as GroupIcon,
+  AccountBalance as SavingsIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
+import { api } from '../../api/axiosConfig';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaRegEdit, FaRegTrashAlt, FaEye, FaCheck } from 'react-icons/fa';
 
@@ -136,6 +139,16 @@ const StatusChip = styled(Chip)(({ theme, status }) => ({
     backgroundColor: 'rgba(34, 197, 94, 0.1)',
     color: '#22c55e',
   }),
+  ...(status === 'approved' && {
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    color: '#16a34a',
+    border: '1px solid rgba(34, 197, 94, 0.3)',
+  }),
+  ...(status === 'rejected' && {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    color: '#dc2626',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+  }),
   ...(status === 'closed' && {
     backgroundColor: 'rgba(107, 114, 128, 0.1)',
     color: '#6b7280',
@@ -165,149 +178,6 @@ const PriorityChip = styled(Chip)(({ theme, priority }) => ({
   }),
 }));
 
-// Mock Data for Reports
-const MOCK_REPORTS = [
-  {
-    id: '1',
-    title: 'Water Leak in Bathroom',
-    description: 'There is a water leak from the bathroom ceiling in unit 101. Water is dripping continuously.',
-    category: 'plumbing',
-    priority: 'emergency',
-    status: 'reported',
-    createdAt: '2026-08-20T10:30:00.000Z',
-    reporter: {
-      fullName: 'Abebe Kebede',
-      email: 'abebe@example.com',
-      phoneNumber: '0912345678',
-    },
-    assignedTo: null,
-    resolutionNotes: null,
-    responses: [],
-  },
-  {
-    id: '2',
-    title: 'Noise from Room 6',
-    description: 'Loud music coming from room 6 at 2 AM every night. Keeping residents awake.',
-    category: 'noise',
-    priority: 'high',
-    status: 'assigned',
-    createdAt: '2026-08-19T14:20:00.000Z',
-    reporter: {
-      fullName: 'Meron Tesfaye',
-      email: 'meron@example.com',
-      phoneNumber: '0923456789',
-    },
-    assignedTo: {
-      fullName: 'Guard User',
-    },
-    resolutionNotes: null,
-    responses: [
-      {
-        id: 'r1',
-        message: 'I have contacted the resident in room 6 about the noise complaint.',
-        isAdminResponse: true,
-        user: { fullName: 'Admin User' },
-        createdAt: '2026-08-19T16:00:00.000Z',
-      },
-    ],
-  },
-  {
-    id: '3',
-    title: 'Broken Elevator',
-    description: 'The main elevator in Block A is not working. Residents are stuck using stairs.',
-    category: 'structural',
-    priority: 'emergency',
-    status: 'in_progress',
-    createdAt: '2026-08-18T09:00:00.000Z',
-    reporter: {
-      fullName: 'Dawit Hailu',
-      email: 'dawit@example.com',
-      phoneNumber: '0934567890',
-    },
-    assignedTo: {
-      fullName: 'Maintenance Team',
-    },
-    resolutionNotes: 'Waiting for elevator parts to arrive.',
-    responses: [
-      {
-        id: 'r2',
-        message: 'Elevator technician has been called. Parts ordered.',
-        isAdminResponse: true,
-        user: { fullName: 'Admin User' },
-        createdAt: '2026-08-18T11:00:00.000Z',
-      },
-    ],
-  },
-  {
-    id: '4',
-    title: 'Electrical Short Circuit',
-    description: 'Power outage in Block B, units 201-205. Sparking from the main panel.',
-    category: 'electrical',
-    priority: 'emergency',
-    status: 'resolved',
-    createdAt: '2026-08-17T13:45:00.000Z',
-    reporter: {
-      fullName: 'Tigist Worku',
-      email: 'tigist@example.com',
-      phoneNumber: '0945678901',
-    },
-    assignedTo: {
-      fullName: 'Electrician Team',
-    },
-    resolutionNotes: 'Short circuit fixed. Power restored to all units.',
-    responses: [
-      {
-        id: 'r3',
-        message: 'Electrician is on site investigating the issue.',
-        isAdminResponse: true,
-        user: { fullName: 'Admin User' },
-        createdAt: '2026-08-17T14:30:00.000Z',
-      },
-      {
-        id: 'r4',
-        message: 'Power restored. All units working normally.',
-        isAdminResponse: true,
-        user: { fullName: 'Admin User' },
-        createdAt: '2026-08-17T18:00:00.000Z',
-      },
-    ],
-  },
-  {
-    id: '5',
-    title: 'Suspicious Person in Parking Lot',
-    description: 'A suspicious person was seen loitering in the parking lot late at night.',
-    category: 'security',
-    priority: 'high',
-    status: 'closed',
-    createdAt: '2026-08-16T22:15:00.000Z',
-    reporter: {
-      fullName: 'Biruk Ayele',
-      email: 'biruk@example.com',
-      phoneNumber: '0956789012',
-    },
-    assignedTo: {
-      fullName: 'Security Team',
-    },
-    resolutionNotes: 'Security patrol increased. No further incidents reported.',
-    responses: [
-      {
-        id: 'r5',
-        message: 'Security has been informed and is monitoring the area.',
-        isAdminResponse: true,
-        user: { fullName: 'Admin User' },
-        createdAt: '2026-08-16T23:00:00.000Z',
-      },
-      {
-        id: 'r6',
-        message: 'Area is secure. Increased patrols scheduled.',
-        isAdminResponse: true,
-        user: { fullName: 'Admin User' },
-        createdAt: '2026-08-17T06:00:00.000Z',
-      },
-    ],
-  },
-];
-
 const Reports = () => {
   const theme = useTheme();
   
@@ -317,9 +187,13 @@ const Reports = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [priorityFilter, setPriorityFilter] = useState('ALL');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [activeTab, setActiveTab] = useState(0);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
+  const [processingId, setProcessingId] = useState(null);
+
   const [stats, setStats] = useState({
     total: 0,
     reported: 0,
@@ -327,6 +201,8 @@ const Reports = () => {
     inProgress: 0,
     resolved: 0,
     closed: 0,
+    equbRequests: 0,
+    iddirRequests: 0,
   });
   
   // Modal States
@@ -337,34 +213,30 @@ const Reports = () => {
   const [statusData, setStatusData] = useState({ status: '', resolutionNotes: '' });
   const [responseData, setResponseData] = useState({ message: '' });
 
-  // Fetch reports - Using Mock Data
+  // Fetch reports - Real Database Integration
   const fetchReports = async () => {
     try {
       setLoading(true);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Use mock data
-      const reportsData = MOCK_REPORTS;
-      console.log('📥 Mock Reports loaded:', reportsData.length);
+      const res = await api.reports.getAdminAll({ limit: 100 });
+      const reportsData = res.data?.data?.items || res.data?.data || [];
       
       setReports(reportsData);
       setTotalItems(reportsData.length);
       
-      // Calculate stats
+      // Calculate stats directly from real database records
       setStats({
         total: reportsData.length,
         reported: reportsData.filter(r => r.status === 'reported').length,
         assigned: reportsData.filter(r => r.status === 'assigned').length,
         inProgress: reportsData.filter(r => r.status === 'in_progress').length,
-        resolved: reportsData.filter(r => r.status === 'resolved').length,
-        closed: reportsData.filter(r => r.status === 'closed').length,
+        resolved: reportsData.filter(r => r.status === 'resolved' || r.status === 'approved').length,
+        closed: reportsData.filter(r => r.status === 'closed' || r.status === 'rejected').length,
+        equbRequests: reportsData.filter(r => r.category === 'equb_membership').length,
+        iddirRequests: reportsData.filter(r => r.category === 'iddir_membership').length,
       });
-      
     } catch (error) {
-      console.error('❌ Error fetching reports:', error);
-      toast.error('Failed to fetch reports');
+      console.error('Error fetching reports:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch reports');
     } finally {
       setLoading(false);
     }
@@ -377,14 +249,30 @@ const Reports = () => {
   // Filter reports
   const filteredReports = reports.filter(report => {
     const matchesSearch = 
-      report.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.reporter?.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
+      (report.title && report.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (report.description && report.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (report.reporter?.fullName && report.reporter.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (report.equb?.name && report.equb.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (report.iddir?.name && report.iddir.name.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'ALL' || report.status === statusFilter;
     const matchesPriority = priorityFilter === 'ALL' || report.priority === priorityFilter;
+    const matchesCategory = categoryFilter === 'ALL' || report.category === categoryFilter;
+
+    // Tabs filter
+    let matchesTab = true;
+    if (activeTab === 1) {
+      // Community Membership Requests
+      matchesTab = report.category === 'equb_membership' || report.category === 'iddir_membership';
+    } else if (activeTab === 2) {
+      // Maintenance & Repairs
+      matchesTab = report.category === 'maintenance';
+    } else if (activeTab === 3) {
+      // General Complaints & Other
+      matchesTab = report.category !== 'equb_membership' && report.category !== 'iddir_membership' && report.category !== 'maintenance';
+    }
     
-    return matchesSearch && matchesStatus && matchesPriority;
+    return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesTab;
   });
 
   // Pagination
@@ -403,65 +291,90 @@ const Reports = () => {
     setPage(0);
   };
 
-  // Handle status update
-  const handleUpdateStatus = async () => {
+  // Handle quick decision for community membership requests
+  const handleQuickDecision = async (reportId, newStatus, customNotes) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      setProcessingId(reportId);
+      const defaultNotes = newStatus === 'approved' 
+        ? 'Community group membership approved and activated by condo administration.'
+        : 'Community group membership request declined by condo administration.';
       
-      // Update local state
-      const updatedReports = reports.map(r => 
-        r.id === selectedReport.id 
-          ? { ...r, status: statusData.status, resolutionNotes: statusData.resolutionNotes || r.resolutionNotes }
-          : r
-      );
-      setReports(updatedReports);
+      const resolutionNotes = customNotes || defaultNotes;
       
-      // Update stats
-      setStats({
-        total: updatedReports.length,
-        reported: updatedReports.filter(r => r.status === 'reported').length,
-        assigned: updatedReports.filter(r => r.status === 'assigned').length,
-        inProgress: updatedReports.filter(r => r.status === 'in_progress').length,
-        resolved: updatedReports.filter(r => r.status === 'resolved').length,
-        closed: updatedReports.filter(r => r.status === 'closed').length,
+      await api.reports.updateStatus(reportId, {
+        status: newStatus,
+        resolutionNotes
       });
       
+      toast.success(newStatus === 'approved' ? 'Membership approved and activated in group!' : 'Request marked as declined.');
+      
+      // Update selectedReport state if currently viewing in modal
+      if (selectedReport && selectedReport.id === reportId) {
+        setSelectedReport(prev => ({
+          ...prev,
+          status: newStatus,
+          resolutionNotes
+        }));
+      }
+
+      await fetchReports();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error(error.response?.data?.message || 'Failed to update request status');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Handle status update modal submission
+  const handleUpdateStatus = async () => {
+    if (!selectedReport) return;
+    try {
+      await api.reports.updateStatus(selectedReport.id, {
+        status: statusData.status,
+        resolutionNotes: statusData.resolutionNotes || undefined
+      });
       toast.success('Report status updated successfully');
       setOpenStatusModal(false);
       setSelectedReport(null);
+      await fetchReports();
     } catch (error) {
-      toast.error('Failed to update status');
+      console.error('Error updating status:', error);
+      toast.error(error.response?.data?.message || 'Failed to update status');
     }
   };
 
   // Handle add response
   const handleAddResponse = async () => {
+    if (!selectedReport || !responseData.message?.trim()) {
+      toast.error('Response message cannot be empty');
+      return;
+    }
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newResponse = {
-        id: 'r' + Date.now(),
-        message: responseData.message,
-        isAdminResponse: true,
-        user: { fullName: 'Admin User' },
-        createdAt: new Date().toISOString(),
-      };
-      
-      const updatedReports = reports.map(r => 
-        r.id === selectedReport.id 
-          ? { ...r, responses: [...(r.responses || []), newResponse] }
-          : r
-      );
-      setReports(updatedReports);
-      
+      await api.reports.addResponse(selectedReport.id, {
+        message: responseData.message.trim()
+      });
       toast.success('Response added successfully');
       setOpenResponseModal(false);
       setResponseData({ message: '' });
       setSelectedReport(null);
+      await fetchReports();
     } catch (error) {
-      toast.error('Failed to add response');
+      console.error('Error adding response:', error);
+      toast.error(error.response?.data?.message || 'Failed to add response');
+    }
+  };
+
+  // Handle delete report
+  const handleDeleteReport = async (reportId) => {
+    if (!window.confirm('Are you sure you want to delete this report?')) return;
+    try {
+      await api.reports.delete(reportId);
+      toast.success('Report deleted successfully');
+      await fetchReports();
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete report');
     }
   };
 
@@ -474,10 +387,17 @@ const Reports = () => {
   // Handle open status modal
   const handleOpenStatusModal = (report) => {
     setSelectedReport(report);
+    let nextStatus = 'assigned';
+    if (report.status === 'reported') nextStatus = 'assigned';
+    else if (report.status === 'assigned') nextStatus = 'in_progress';
+    else if (report.status === 'in_progress') {
+      nextStatus = (report.category === 'equb_membership' || report.category === 'iddir_membership') ? 'approved' : 'resolved';
+    } else {
+      nextStatus = 'closed';
+    }
+
     setStatusData({ 
-      status: report.status === 'reported' ? 'assigned' : 
-              report.status === 'assigned' ? 'in_progress' :
-              report.status === 'in_progress' ? 'resolved' : 'closed',
+      status: nextStatus,
       resolutionNotes: report.resolutionNotes || '' 
     });
     setOpenStatusModal(true);
@@ -492,6 +412,9 @@ const Reports = () => {
 
   // Get status label
   const getStatusLabel = (status) => {
+    if (!status) return 'Unknown';
+    if (status === 'approved') return 'Approved & Active';
+    if (status === 'rejected') return 'Declined';
     return status.replace('_', ' ');
   };
 
@@ -509,10 +432,10 @@ const Reports = () => {
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a2e', mb: 0.5 }}>
-            Report Management
+            Report & Request Management
           </Typography>
           <Typography variant="body2" sx={{ color: '#6b7a8f' }}>
-            Manage and respond to resident reports
+            Manage resident issues, maintenance, and Equb / Iddir membership requests
           </Typography>
         </Box>
         <Button
@@ -539,7 +462,7 @@ const Reports = () => {
 
       {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} sm={4} md={2.4}>
+        <Grid item xs={6} sm={4} md={2}>
           <StatsCard color="rgba(107, 114, 128, 0.1)">
             <CardContent sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -554,7 +477,8 @@ const Reports = () => {
             </CardContent>
           </StatsCard>
         </Grid>
-        <Grid item xs={6} sm={4} md={2.4}>
+
+        <Grid item xs={6} sm={4} md={2}>
           <StatsCard color="rgba(245, 158, 11, 0.1)">
             <CardContent sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -569,7 +493,8 @@ const Reports = () => {
             </CardContent>
           </StatsCard>
         </Grid>
-        <Grid item xs={6} sm={4} md={2.4}>
+
+        <Grid item xs={6} sm={4} md={2}>
           <StatsCard color="rgba(59, 130, 246, 0.1)">
             <CardContent sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -584,7 +509,8 @@ const Reports = () => {
             </CardContent>
           </StatsCard>
         </Grid>
-        <Grid item xs={6} sm={4} md={2.4}>
+
+        <Grid item xs={6} sm={4} md={2}>
           <StatsCard color="rgba(34, 197, 94, 0.1)">
             <CardContent sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -599,16 +525,39 @@ const Reports = () => {
             </CardContent>
           </StatsCard>
         </Grid>
-        <Grid item xs={6} sm={4} md={2.4}>
-          <StatsCard color="rgba(107, 114, 128, 0.1)">
+
+        <Grid item xs={6} sm={4} md={2}>
+          <StatsCard 
+            color="rgba(217, 119, 6, 0.1)" 
+            onClick={() => { setActiveTab(1); setCategoryFilter('equb_membership'); }}
+          >
             <CardContent sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 500 }}>Closed</Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#6b7280' }}>{stats.closed}</Typography>
+                  <Typography variant="caption" sx={{ color: '#b45309', fontWeight: 600 }}>Equb Requests</Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#b45309' }}>{stats.equbRequests}</Typography>
                 </Box>
-                <Box className="stat-icon" sx={{ background: 'rgba(107, 114, 128, 0.1)' }}>
-                  <CancelIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+                <Box className="stat-icon" sx={{ background: 'rgba(217, 119, 6, 0.15)' }}>
+                  <SavingsIcon sx={{ color: '#b45309', fontSize: 20 }} />
+                </Box>
+              </Box>
+            </CardContent>
+          </StatsCard>
+        </Grid>
+
+        <Grid item xs={6} sm={4} md={2}>
+          <StatsCard 
+            color="rgba(79, 70, 229, 0.1)" 
+            onClick={() => { setActiveTab(1); setCategoryFilter('iddir_membership'); }}
+          >
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#4338ca', fontWeight: 600 }}>Iddir Requests</Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#4338ca' }}>{stats.iddirRequests}</Typography>
+                </Box>
+                <Box className="stat-icon" sx={{ background: 'rgba(79, 70, 229, 0.15)' }}>
+                  <GroupIcon sx={{ color: '#4338ca', fontSize: 20 }} />
                 </Box>
               </Box>
             </CardContent>
@@ -616,13 +565,51 @@ const Reports = () => {
         </Grid>
       </Grid>
 
+      {/* Tabs Filter */}
+      <Paper sx={{ mb: 2, borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+        <Tabs
+          value={activeTab}
+          onChange={(e, val) => {
+            setActiveTab(val);
+            setPage(0);
+          }}
+          indicatorColor="primary"
+          textColor="primary"
+          sx={{
+            px: 2,
+            borderBottom: '1px solid #f1f3f5',
+            '& .MuiTab-root': {
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              py: 1.8,
+            },
+            '& .Mui-selected': {
+              color: '#c49a2b !important',
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: '#c49a2b',
+              height: 3,
+            }
+          }}
+        >
+          <Tab label={`All Reports (${reports.length})`} />
+          <Tab 
+            label={`Community Membership Requests (${stats.equbRequests + stats.iddirRequests})`} 
+            sx={{ fontWeight: (stats.equbRequests + stats.iddirRequests > 0) ? 700 : 500 }}
+          />
+          <Tab label="Maintenance & Repairs" />
+          <Tab label="Complaints & Other" />
+        </Tabs>
+      </Paper>
+
       {/* Search and Filters */}
       <Paper sx={{ mb: 3, p: 2, borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Search by title, description or reporter name..."
+            placeholder="Search by title, description, reporter name, or group..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{
@@ -635,11 +622,37 @@ const Reports = () => {
             }}
             size="small"
           />
-          <FormControl size="small" sx={{ minWidth: 130 }}>
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setPage(0);
+              }}
+              label="Category"
+              sx={{ borderRadius: '10px' }}
+            >
+              <MenuItem value="ALL">All Categories</MenuItem>
+              <MenuItem value="equb_membership">Equb Membership</MenuItem>
+              <MenuItem value="iddir_membership">Iddir Membership</MenuItem>
+              <MenuItem value="maintenance">Maintenance</MenuItem>
+              <MenuItem value="security">Security</MenuItem>
+              <MenuItem value="noise">Noise</MenuItem>
+              <MenuItem value="facility">Facility</MenuItem>
+              <MenuItem value="financial">Financial</MenuItem>
+              <MenuItem value="rules">Rules Violation</MenuItem>
+              <MenuItem value="other">Other</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel>Status</InputLabel>
             <Select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(0);
+              }}
               label="Status"
               sx={{ borderRadius: '10px' }}
             >
@@ -647,7 +660,9 @@ const Reports = () => {
               <MenuItem value="reported">Reported</MenuItem>
               <MenuItem value="assigned">Assigned</MenuItem>
               <MenuItem value="in_progress">In Progress</MenuItem>
+              <MenuItem value="approved">Approved</MenuItem>
               <MenuItem value="resolved">Resolved</MenuItem>
+              <MenuItem value="rejected">Rejected</MenuItem>
               <MenuItem value="closed">Closed</MenuItem>
             </Select>
           </FormControl>
@@ -655,7 +670,10 @@ const Reports = () => {
             <InputLabel>Priority</InputLabel>
             <Select
               value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
+              onChange={(e) => {
+                setPriorityFilter(e.target.value);
+                setPage(0);
+              }}
               label="Priority"
               sx={{ borderRadius: '10px' }}
             >
@@ -674,135 +692,237 @@ const Reports = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Title / Description</TableCell>
-              <TableCell>Category</TableCell>
+              <TableCell>Title / Scope</TableCell>
+              <TableCell>Category & Associated Group</TableCell>
               <TableCell>Priority</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Reporter</TableCell>
+              <TableCell>Applicant / Reporter</TableCell>
               <TableCell>Date</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {paginatedReports.length > 0 ? (
-              paginatedReports.map((report) => (
-                <TableRow key={report.id} hover>
-                  <TableCell>
-                    <Box>
-                      <Typography variant="body2" fontWeight={500} color="#1a1a2e">
-                        {report.title}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#6b7a8f' }}>
-                        {report.description?.substring(0, 60)}...
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={report.category}
-                      size="small"
-                      sx={{
-                        backgroundColor: 'rgba(107, 114, 128, 0.08)',
-                        color: '#6b7280',
-                        fontWeight: 500,
-                        textTransform: 'capitalize',
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <PriorityChip priority={report.priority} label={report.priority} />
-                  </TableCell>
-                  <TableCell>
-                    <StatusChip status={report.status} label={getStatusLabel(report.status)} />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar sx={{ width: 24, height: 24, bgcolor: '#D3AD32', fontSize: '0.65rem' }}>
-                        {report.reporter?.fullName?.charAt(0) || 'U'}
-                      </Avatar>
+              paginatedReports.map((report) => {
+                const isEqub = report.category === 'equb_membership';
+                const isIddir = report.category === 'iddir_membership';
+                const isMembershipRequest = isEqub || isIddir;
+                const isPendingDecision = report.status === 'reported' || report.status === 'assigned' || report.status === 'in_progress';
+
+                return (
+                  <TableRow key={report.id} hover>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="body2" fontWeight={600} color="#1a1a2e">
+                          {report.title}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#6b7a8f' }}>
+                          {report.description && report.description.length > 70 
+                            ? `${report.description.substring(0, 70)}...` 
+                            : report.description}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {isEqub ? (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          <Chip 
+                            icon={<SavingsIcon sx={{ fontSize: '14px !important', color: '#b45309 !important' }} />}
+                            label="Equb Join Request"
+                            size="small"
+                            sx={{
+                              backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                              color: '#b45309',
+                              fontWeight: 600,
+                              width: 'fit-content'
+                            }}
+                          />
+                          {report.equb?.name && (
+                            <Typography variant="caption" sx={{ color: '#78716c', fontWeight: 600 }}>
+                              Group: {report.equb.name}
+                            </Typography>
+                          )}
+                        </Box>
+                      ) : isIddir ? (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          <Chip 
+                            icon={<GroupIcon sx={{ fontSize: '14px !important', color: '#4338ca !important' }} />}
+                            label="Iddir Join Request"
+                            size="small"
+                            sx={{
+                              backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                              color: '#4338ca',
+                              fontWeight: 600,
+                              width: 'fit-content'
+                            }}
+                          />
+                          {report.iddir?.name && (
+                            <Typography variant="caption" sx={{ color: '#78716c', fontWeight: 600 }}>
+                              Group: {report.iddir.name}
+                            </Typography>
+                          )}
+                        </Box>
+                      ) : (
+                        <Chip 
+                          label={report.category?.replace('_', ' ')}
+                          size="small"
+                          sx={{
+                            backgroundColor: 'rgba(107, 114, 128, 0.08)',
+                            color: '#6b7280',
+                            fontWeight: 500,
+                            textTransform: 'capitalize',
+                          }}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <PriorityChip priority={report.priority} label={report.priority} />
+                    </TableCell>
+                    <TableCell>
+                      <StatusChip status={report.status} label={getStatusLabel(report.status)} />
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar sx={{ width: 26, height: 26, bgcolor: '#D3AD32', fontSize: '0.7rem' }}>
+                          {report.reporter?.fullName?.charAt(0) || 'U'}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2" sx={{ color: '#1a1a2e', fontWeight: 500, lineHeight: 1.2 }}>
+                            {report.reporter?.fullName || 'Resident'}
+                          </Typography>
+                          {report.reporter?.unitNumber && (
+                            <Typography variant="caption" sx={{ color: '#6b7a8f' }}>
+                              Unit {report.reporter.unitNumber}
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
                       <Typography variant="body2" sx={{ color: '#6b7a8f' }}>
-                        {report.reporter?.fullName || 'Anonymous'}
+                        {new Date(report.createdAt).toLocaleDateString()}
                       </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" sx={{ color: '#6b7a8f' }}>
-                      {new Date(report.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                      <Tooltip title="View Details">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleViewDetails(report)}
-                          sx={{ 
-                            color: '#6b7a8f', 
-                            '&:hover': { 
-                              color: '#D3AD32',
-                              backgroundColor: 'rgba(211, 173, 50, 0.08)',
-                              transform: 'scale(1.1)',
-                            },
-                            transition: 'all 0.2s ease',
-                            borderRadius: '10px',
-                            padding: '8px',
-                          }}
-                        >
-                          <FaEye size={16} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Update Status">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleOpenStatusModal(report)}
-                          sx={{ 
-                            color: '#6b7a8f', 
-                            '&:hover': { 
-                              color: '#4a6cf7',
-                              backgroundColor: 'rgba(74, 108, 247, 0.08)',
-                              transform: 'scale(1.1)',
-                            },
-                            transition: 'all 0.2s ease',
-                            borderRadius: '10px',
-                            padding: '8px',
-                          }}
-                        >
-                          <FaRegEdit size={16} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Add Response">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleOpenResponseModal(report)}
-                          sx={{ 
-                            color: '#6b7a8f', 
-                            '&:hover': { 
-                              color: '#22c55e',
-                              backgroundColor: 'rgba(34, 197, 94, 0.08)',
-                              transform: 'scale(1.1)',
-                            },
-                            transition: 'all 0.2s ease',
-                            borderRadius: '10px',
-                            padding: '8px',
-                          }}
-                        >
-                          <MessageIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    <TableCell align="right">
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 0.5 }}>
+                        {/* Quick Action Button for Community Membership */}
+                        {isMembershipRequest && isPendingDecision && (
+                          <Tooltip title="Approve & Activate Membership">
+                            <IconButton
+                              size="small"
+                              disabled={processingId === report.id}
+                              onClick={() => handleQuickDecision(report.id, 'approved')}
+                              sx={{ 
+                                color: '#16a34a', 
+                                backgroundColor: 'rgba(22, 163, 74, 0.08)',
+                                '&:hover': { 
+                                  backgroundColor: 'rgba(22, 163, 74, 0.18)',
+                                  transform: 'scale(1.1)',
+                                },
+                                transition: 'all 0.2s ease',
+                                borderRadius: '8px',
+                                padding: '6px',
+                              }}
+                            >
+                              <CheckCircleIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+
+                        <Tooltip title="View Details">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleViewDetails(report)}
+                            sx={{ 
+                              color: '#6b7a8f', 
+                              '&:hover': { 
+                                color: '#D3AD32',
+                                backgroundColor: 'rgba(211, 173, 50, 0.08)',
+                                transform: 'scale(1.1)',
+                              },
+                              transition: 'all 0.2s ease',
+                              borderRadius: '8px',
+                              padding: '6px',
+                            }}
+                          >
+                            <FaEye size={16} />
+                          </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Update Status">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenStatusModal(report)}
+                            sx={{ 
+                              color: '#6b7a8f', 
+                              '&:hover': { 
+                                color: '#4a6cf7',
+                                backgroundColor: 'rgba(74, 108, 247, 0.08)',
+                                transform: 'scale(1.1)',
+                              },
+                              transition: 'all 0.2s ease',
+                              borderRadius: '8px',
+                              padding: '6px',
+                            }}
+                          >
+                            <FaRegEdit size={16} />
+                          </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Add Response">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenResponseModal(report)}
+                            sx={{ 
+                              color: '#6b7a8f', 
+                              '&:hover': { 
+                                color: '#22c55e',
+                                backgroundColor: 'rgba(34, 197, 94, 0.08)',
+                                transform: 'scale(1.1)',
+                              },
+                              transition: 'all 0.2s ease',
+                              borderRadius: '8px',
+                              padding: '6px',
+                            }}
+                          >
+                            <MessageIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Delete Report">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteReport(report.id)}
+                            sx={{ 
+                              color: '#6b7a8f', 
+                              '&:hover': { 
+                                color: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                                transform: 'scale(1.1)',
+                              },
+                              transition: 'all 0.2s ease',
+                              borderRadius: '8px',
+                              padding: '6px',
+                            }}
+                          >
+                            <FaRegTrashAlt size={15} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
-                <TableCell colSpan={7}>
-                  <Box sx={{ textAlign: 'center', py: 6 }}>
+                <TableCell colSpan={7} sx={{ textAlign: 'center', py: 6 }}>
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
                     <ReportIcon sx={{ fontSize: 48, color: '#d1d5db', mb: 1 }} />
                     <Typography variant="h6" color="#6b7a8f">
-                      No reports found
+                      No reports or requests found
                     </Typography>
                     <Typography variant="body2" color="#9ca3af">
-                      {searchTerm ? 'Try adjusting your search' : 'No reports in your condominium'}
+                      {searchTerm ? 'Try adjusting your search criteria' : 'No entries matching current filter'}
                     </Typography>
                   </Box>
                 </TableCell>
@@ -830,6 +950,7 @@ const Reports = () => {
 
       {/* Detail Modal */}
       <Dialog 
+        disableRestoreFocus  
         open={openDetailModal} 
         onClose={() => setOpenDetailModal(false)} 
         maxWidth="md" 
@@ -851,10 +972,10 @@ const Reports = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <DialogTitle sx={{ p: 0, fontWeight: 700, fontSize: '1.25rem' }}>
-                Report Details
+                Report & Request Details
               </DialogTitle>
               <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
-                View complete report information
+                Review full report information and take action
               </Typography>
             </Box>
             <IconButton 
@@ -866,64 +987,182 @@ const Reports = () => {
           </Box>
         </Box>
         
-        <DialogContent sx={{ p: 4, bgcolor: '#f8f9fa' }}>
+        <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8f9fa' }}>
           {selectedReport && (
             <Box>
+              {/* Community Group Request Banner if applicable */}
+              {(selectedReport.category === 'equb_membership' || selectedReport.category === 'iddir_membership') && (
+                <Paper 
+                  sx={{ 
+                    p: 2.5, 
+                    mb: 3, 
+                    bgcolor: selectedReport.category === 'equb_membership' ? '#fffbeb' : '#eef2ff', 
+                    border: '1px solid',
+                    borderColor: selectedReport.category === 'equb_membership' ? '#fde68a' : '#c7d2fe', 
+                    borderRadius: '14px' 
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      {selectedReport.category === 'equb_membership' ? (
+                        <SavingsIcon sx={{ color: '#d97706', fontSize: 32 }} />
+                      ) : (
+                        <GroupIcon sx={{ color: '#4f46e5', fontSize: 32 }} />
+                      )}
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={700} color={selectedReport.category === 'equb_membership' ? '#78350f' : '#312e81'}>
+                          {selectedReport.category === 'equb_membership' ? 'Equb Group Join Request' : 'Iddir Group Join Request'}
+                        </Typography>
+                        <Typography variant="body2" color={selectedReport.category === 'equb_membership' ? '#92400e' : '#3730a3'}>
+                          Review applicant and authorize community membership
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <StatusChip status={selectedReport.status} label={getStatusLabel(selectedReport.status)} />
+                  </Box>
+
+                  <Divider sx={{ my: 1.5, borderColor: selectedReport.category === 'equb_membership' ? '#fde68a' : '#c7d2fe' }} />
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={600}>Target Group</Typography>
+                      <Typography variant="body1" fontWeight={700} color="#1c1917">
+                        {selectedReport.category === 'equb_membership' 
+                          ? selectedReport.equb?.name || 'Equb Group' 
+                          : selectedReport.iddir?.name || 'Iddir Group'}
+                      </Typography>
+                      {selectedReport.category === 'equb_membership' && selectedReport.equb && (
+                        <Typography variant="caption" color="#78716c" display="block">
+                          Type: {selectedReport.equb.type} • Contribution: {Number(selectedReport.equb.contributionAmount || 0).toLocaleString()} ETB
+                        </Typography>
+                      )}
+                      {selectedReport.category === 'iddir_membership' && selectedReport.iddir && (
+                        <Typography variant="caption" color="#78716c" display="block">
+                          Monthly Contribution: {Number(selectedReport.iddir.monthlyContribution || 0).toLocaleString()} ETB
+                        </Typography>
+                      )}
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={600}>Applicant Resident</Typography>
+                      <Typography variant="body1" fontWeight={600} color="#1c1917">
+                        {selectedReport.reporter?.fullName || 'Resident'}
+                      </Typography>
+                      <Typography variant="caption" color="#78716c" display="block">
+                        Unit: {selectedReport.reporter?.unitNumber || 'N/A'} • Phone: {selectedReport.reporter?.phoneNumber || 'N/A'} • Email: {selectedReport.reporter?.email || 'N/A'}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+                  {/* Direct Action Buttons for Pending Membership Requests */}
+                  {(selectedReport.status === 'reported' || selectedReport.status === 'assigned' || selectedReport.status === 'in_progress') && (
+                    <Box sx={{ mt: 2.5, pt: 2, borderTop: '1px dashed #e2e8f0', display: 'flex', gap: 2, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<CancelIcon />}
+                        disabled={processingId === selectedReport.id}
+                        onClick={() => handleQuickDecision(selectedReport.id, 'rejected')}
+                        sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '10px' }}
+                      >
+                        Decline Request
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<CheckCircleIcon />}
+                        disabled={processingId === selectedReport.id}
+                        onClick={() => handleQuickDecision(selectedReport.id, 'approved')}
+                        sx={{ 
+                          textTransform: 'none', 
+                          fontWeight: 600, 
+                          borderRadius: '10px',
+                          background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                          color: '#fff',
+                          boxShadow: '0 4px 12px rgba(22, 163, 74, 0.25)',
+                          '&:hover': {
+                            background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                          }
+                        }}
+                      >
+                        {processingId === selectedReport.id ? 'Activating...' : 'Approve & Activate Membership'}
+                      </Button>
+                    </Box>
+                  )}
+                </Paper>
+              )}
+
               <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a2e', mb: 1 }}>
                 {selectedReport.title}
               </Typography>
+              
               <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid item xs={6}>
-                  <Typography variant="body2" sx={{ color: '#6b7a8f' }}>Category</Typography>
-                  <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{selectedReport.category}</Typography>
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f' }}>Category</Typography>
+                  <Typography variant="body2" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
+                    {selectedReport.category?.replace('_', ' ')}
+                  </Typography>
                 </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" sx={{ color: '#6b7a8f' }}>Priority</Typography>
-                  <PriorityChip priority={selectedReport.priority} label={selectedReport.priority} />
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f' }}>Priority</Typography>
+                  <Box sx={{ mt: 0.5 }}>
+                    <PriorityChip priority={selectedReport.priority} label={selectedReport.priority} />
+                  </Box>
                 </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" sx={{ color: '#6b7a8f' }}>Status</Typography>
-                  <StatusChip status={selectedReport.status} label={getStatusLabel(selectedReport.status)} />
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f' }}>Status</Typography>
+                  <Box sx={{ mt: 0.5 }}>
+                    <StatusChip status={selectedReport.status} label={getStatusLabel(selectedReport.status)} />
+                  </Box>
                 </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" sx={{ color: '#6b7a8f' }}>Reporter</Typography>
-                  <Typography variant="body2">{selectedReport.reporter?.fullName || 'Anonymous'}</Typography>
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f' }}>Reporter</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {selectedReport.reporter?.fullName || 'Resident'}
+                  </Typography>
                 </Grid>
               </Grid>
-              <Typography variant="body2" sx={{ color: '#6b7a8f', mb: 1 }}>Description</Typography>
-              <Paper sx={{ p: 2, bgcolor: '#f8f9fa', borderRadius: '8px', mb: 2 }}>
-                <Typography variant="body2">{selectedReport.description}</Typography>
+
+              <Typography variant="body2" sx={{ color: '#6b7a8f', mb: 0.5, fontWeight: 500 }}>Description</Typography>
+              <Paper sx={{ p: 2, bgcolor: '#ffffff', borderRadius: '10px', border: '1px solid #e9ecef', mb: 2 }}>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', color: '#374151' }}>
+                  {selectedReport.description}
+                </Typography>
               </Paper>
+
               {selectedReport.assignedTo && (
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ color: '#6b7a8f' }}>Assigned To</Typography>
+                  <Typography variant="body2" sx={{ color: '#6b7a8f', fontWeight: 500 }}>Assigned Staff</Typography>
                   <Typography variant="body2">{selectedReport.assignedTo.fullName}</Typography>
                 </Box>
               )}
+
               {selectedReport.resolutionNotes && (
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" sx={{ color: '#6b7a8f' }}>Resolution Notes</Typography>
-                  <Paper sx={{ p: 2, bgcolor: '#f8f9fa', borderRadius: '8px' }}>
-                    <Typography variant="body2">{selectedReport.resolutionNotes}</Typography>
+                  <Typography variant="body2" sx={{ color: '#6b7a8f', fontWeight: 500, mb: 0.5 }}>Resolution Notes</Typography>
+                  <Paper sx={{ p: 2, bgcolor: '#ffffff', borderRadius: '10px', border: '1px solid #e9ecef' }}>
+                    <Typography variant="body2" sx={{ color: '#374151' }}>{selectedReport.resolutionNotes}</Typography>
                   </Paper>
                 </Box>
               )}
+
               {selectedReport.responses && selectedReport.responses.length > 0 && (
-                <Box>
-                  <Typography variant="body2" sx={{ color: '#6b7a8f', mb: 1 }}>Responses</Typography>
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#1a1a2e', fontWeight: 600, mb: 1 }}>
+                    Communication History ({selectedReport.responses.length})
+                  </Typography>
                   {selectedReport.responses.map((response) => (
                     <Paper 
                       key={response.id} 
                       sx={{ 
                         p: 2, 
-                        mb: 1, 
-                        bgcolor: response.isAdminResponse ? 'rgba(211, 173, 50, 0.05)' : '#f8f9fa',
-                        borderRadius: '8px',
-                        border: response.isAdminResponse ? '1px solid rgba(211, 173, 50, 0.2)' : 'none',
+                        mb: 1.5, 
+                        bgcolor: response.isAdminResponse ? 'rgba(211, 173, 50, 0.08)' : '#ffffff',
+                        borderRadius: '10px',
+                        border: response.isAdminResponse ? '1px solid rgba(211, 173, 50, 0.3)' : '1px solid #e9ecef',
                       }}
                     >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" fontWeight={500}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" fontWeight={600} color={response.isAdminResponse ? '#92400e' : '#1a1a2e'}>
                           {response.user?.fullName || 'User'}
                           {response.isAdminResponse && ' (Admin)'}
                         </Typography>
@@ -931,7 +1170,7 @@ const Reports = () => {
                           {new Date(response.createdAt).toLocaleString()}
                         </Typography>
                       </Box>
-                      <Typography variant="body2" sx={{ mt: 1 }}>{response.message}</Typography>
+                      <Typography variant="body2" sx={{ mt: 0.5, color: '#374151' }}>{response.message}</Typography>
                     </Paper>
                   ))}
                 </Box>
@@ -940,12 +1179,15 @@ const Reports = () => {
           )}
         </DialogContent>
         <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa' }}>
-          <Button onClick={() => setOpenDetailModal(false)}>Close</Button>
+          <Button onClick={() => setOpenDetailModal(false)} sx={{ textTransform: 'none', fontWeight: 600 }}>
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Status Update Modal */}
       <Dialog 
+        disableRestoreFocus  
         open={openStatusModal} 
         onClose={() => setOpenStatusModal(false)} 
         maxWidth="sm" 
@@ -961,7 +1203,7 @@ const Reports = () => {
             Update Report Status
           </DialogTitle>
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
-            Change the status of this report
+            Change the status and provide resolution documentation
           </Typography>
         </Box>
         <DialogContent sx={{ p: 4, bgcolor: '#f8f9fa' }}>
@@ -977,7 +1219,9 @@ const Reports = () => {
                 <MenuItem value="reported">Reported</MenuItem>
                 <MenuItem value="assigned">Assigned</MenuItem>
                 <MenuItem value="in_progress">In Progress</MenuItem>
+                <MenuItem value="approved">Approved & Active (Activate Membership)</MenuItem>
                 <MenuItem value="resolved">Resolved</MenuItem>
+                <MenuItem value="rejected">Rejected / Declined</MenuItem>
                 <MenuItem value="closed">Closed</MenuItem>
               </Select>
             </FormControl>
@@ -988,7 +1232,7 @@ const Reports = () => {
               multiline
               rows={3}
               fullWidth
-              placeholder="Add notes about resolution..."
+              placeholder="Add notes about resolution, actions taken, or reason for decision..."
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '10px',
@@ -1000,7 +1244,7 @@ const Reports = () => {
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa', gap: 2 }}>
-          <Button onClick={() => setOpenStatusModal(false)}>Cancel</Button>
+          <Button onClick={() => setOpenStatusModal(false)} sx={{ textTransform: 'none' }}>Cancel</Button>
           <Button
             onClick={handleUpdateStatus}
             variant="contained"
@@ -1011,6 +1255,8 @@ const Reports = () => {
                 background: 'linear-gradient(135deg, #c49a2b 0%, #b08822 100%)',
               },
               textTransform: 'none',
+              fontWeight: 600,
+              borderRadius: '10px',
             }}
           >
             Update Status
@@ -1020,6 +1266,7 @@ const Reports = () => {
 
       {/* Response Modal */}
       <Dialog 
+        disableRestoreFocus  
         open={openResponseModal} 
         onClose={() => setOpenResponseModal(false)} 
         maxWidth="sm" 
@@ -1035,7 +1282,7 @@ const Reports = () => {
             Add Response
           </DialogTitle>
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
-            Respond to the resident about this report
+            Respond to the resident regarding this report or request
           </Typography>
         </Box>
         <DialogContent sx={{ p: 4, bgcolor: '#f8f9fa' }}>
@@ -1046,7 +1293,7 @@ const Reports = () => {
             multiline
             rows={4}
             fullWidth
-            placeholder="Type your response here..."
+            placeholder="Type your official response here..."
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '10px',
@@ -1057,7 +1304,7 @@ const Reports = () => {
           />
         </DialogContent>
         <DialogActions sx={{ p: 3, bgcolor: '#f8f9fa', gap: 2 }}>
-          <Button onClick={() => setOpenResponseModal(false)}>Cancel</Button>
+          <Button onClick={() => setOpenResponseModal(false)} sx={{ textTransform: 'none' }}>Cancel</Button>
           <Button
             onClick={handleAddResponse}
             variant="contained"
@@ -1069,6 +1316,8 @@ const Reports = () => {
                 background: 'linear-gradient(135deg, #c49a2b 0%, #b08822 100%)',
               },
               textTransform: 'none',
+              fontWeight: 600,
+              borderRadius: '10px',
             }}
           >
             Send Response
