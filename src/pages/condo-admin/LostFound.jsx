@@ -1,5 +1,5 @@
 // src/pages/condo-admin/LostFound.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -29,7 +29,6 @@ import {
   InputLabel,
   CircularProgress,
   Avatar,
-  useTheme,
   Zoom,
   Tooltip,
   Divider,
@@ -39,27 +38,16 @@ import {
   Refresh as RefreshIcon,
   Add as AddIcon,
   SearchOff as SearchOffIcon,
-  CheckCircle as CheckCircleIcon,
-  Close as CloseIcon,
-  Visibility as VisibilityIcon,
-  Upload as UploadIcon,
   Image as ImageIcon,
   LocationOn as LocationOnIcon,
-  CalendarToday as CalendarTodayIcon,
-  Category as CategoryIcon,
-  Person as PersonIcon,
   Chat as ChatIcon,
-  Send as SendIcon,
-} from '@mui/icons-material';
+  } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
 import ItemTelegramChatModal from '../../components/chat/ItemTelegramChatModal';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaRegEdit, FaRegTrashAlt, FaEye, FaCheck } from 'react-icons/fa';
 import { lostFoundService } from '../../services/lostFoundService';
-import { chatService } from '../../services/chatService';
-import { useAuth } from '../../context/AuthContext';
-
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: '16px',
   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
@@ -149,9 +137,6 @@ const StatusChip = styled(Chip)(({ theme, status }) => ({
 }));
 
 const LostFound = () => {
-  const theme = useTheme();
-  const { user: currentUser } = useAuth();
-  
   // State
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -176,7 +161,6 @@ const LostFound = () => {
   const [openDetailModal, setOpenDetailModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
   const [formData, setFormData] = useState({
     type: 'lost',
     itemName: '',
@@ -190,14 +174,9 @@ const LostFound = () => {
   // Chat Modal State
   const [openChatModal, setOpenChatModal] = useState(false);
   const [chatItem, setChatItem] = useState(null);
-  const [chatPartner, setChatPartner] = useState(null);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
-  const chatMessagesEndRef = useRef(null);
 
   // Fetch items from real API
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
       const res = await lostFoundService.getAll({ limit: 100 });
@@ -214,21 +193,11 @@ const LostFound = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchItems();
-  }, []);
-
-  const scrollToBottom = () => {
-    chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    if (openChatModal) {
-      scrollToBottom();
-    }
-  }, [chatMessages, openChatModal]);
+  }, [fetchItems]);
 
   // Open Chat for an Item
   const handleOpenItemChat = (item) => {
@@ -238,29 +207,6 @@ const LostFound = () => {
   };
 
   // Send Chat Message
-  const handleSendMessage = async (e) => {
-    if (e) e.preventDefault();
-    if (!chatInput.trim() || !chatItem || !chatPartner) return;
-
-    const content = chatInput.trim();
-    setChatInput('');
-
-    try {
-      const newMsg = await chatService.sendMessage({
-        receiverId: chatPartner.id,
-        lostFoundId: chatItem.id,
-        content: content,
-        type: 'message'
-      });
-
-      setChatMessages(prev => [...prev, newMsg]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast.error(error.response?.data?.message || 'Failed to send message');
-      setChatInput(content); // Restore input on error
-    }
-  };
-
   // Filter items
   const filteredItems = items.filter(item => {
     const matchesSearch = 
@@ -360,16 +306,7 @@ const LostFound = () => {
       dateLostFound: '',
       photo: null,
     });
-    setSelectedImage(null);
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData({...formData, photo: file});
-      setSelectedImage(URL.createObjectURL(file));
-    }
-  };
+    };
 
   const getCategoryColor = (category) => {
     const colors = {
@@ -699,7 +636,6 @@ const LostFound = () => {
                               dateLostFound: item.dateLostFound?.split('T')[0] || '',
                               photo: null,
                             });
-                            setSelectedImage(item.photoUrl);
                             setOpenModal(true);
                           }}
                           sx={{ 
@@ -761,7 +697,7 @@ const LostFound = () => {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredItems.length}
+          count={totalItems || filteredItems.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

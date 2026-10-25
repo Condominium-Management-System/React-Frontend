@@ -40,7 +40,6 @@ import {
   Refresh as RefreshIcon,
   AccountBalance as AccountBalanceIcon,
   Shield as ShieldIcon,
-  People as PeopleIcon,
   Close as CloseIcon,
   MonetizationOn as MoneyIcon,
   EmojiEvents as TrophyIcon,
@@ -49,9 +48,7 @@ import {
   Casino as CasinoIcon,
   Payment as PaymentIcon,
   VolunteerActivism as DisburseIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-} from '@mui/icons-material';
+  } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -1146,6 +1143,11 @@ const EqubIddirManagement = () => {
           </Box>
 
           <DialogContent sx={{ p: 3, bgcolor: '#f8f9fa' }}>
+          {loadingDetail && (
+            <Box sx={{ py: 2, textAlign: 'center' }}>
+              <CircularProgress size={24} sx={{ color: '#D3AD32' }} />
+            </Box>
+          )}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               {/* Condominium Select Input */}
               <FormControl fullWidth required sx={{ bgcolor: '#fff' }}>

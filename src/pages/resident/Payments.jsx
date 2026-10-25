@@ -1,5 +1,5 @@
 // src/pages/resident/Payments.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api/axiosConfig';
 import { toast } from 'react-toastify';
@@ -41,7 +41,7 @@ const ResidentPayments = () => {
   }, [location.search]);
 
   // Fetch payments & community groups
-  const fetchPaymentsData = async () => {
+  const fetchPaymentsData = useCallback(async () => {
     try {
       setLoading(true);
       const [payRes, equbRes, iddirRes, condoAccRes] = await Promise.allSettled([
@@ -109,11 +109,11 @@ const ResidentPayments = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [urlPaymentId]);
 
   useEffect(() => {
     fetchPaymentsData();
-  }, [urlPaymentId]);
+  }, [fetchPaymentsData]);
 
   // Match current active condo destination account
   const currentCondoDestination = condoAccounts.find(

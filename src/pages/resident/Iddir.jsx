@@ -1,12 +1,10 @@
 // src/pages/resident/Iddir.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/axiosConfig';
 import { toast } from 'react-toastify';
 
 const ResidentIddir = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const { id: urlIddirId } = useParams();
   const [searchParams] = useSearchParams();
@@ -27,7 +25,7 @@ const ResidentIddir = () => {
     description: '',
   });
 
-  const fetchIddirData = async () => {
+  const fetchIddirData = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.iddirs.getMy();
@@ -50,9 +48,9 @@ const ResidentIddir = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [urlIddirId]);
 
-  const fetchMyClaims = async () => {
+  const fetchMyClaims = useCallback(async () => {
     try {
       setLoadingClaims(true);
       const res = await api.iddirs.getMyClaims();
@@ -63,12 +61,12 @@ const ResidentIddir = () => {
     } finally {
       setLoadingClaims(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchIddirData();
     fetchMyClaims();
-  }, [urlIddirId]);
+  }, [fetchIddirData, fetchMyClaims]);
 
   useEffect(() => {
     if (searchParams.get('action') === 'claim') {
@@ -76,9 +74,18 @@ const ResidentIddir = () => {
     }
   }, [searchParams]);
 
-  const handleRequestJoin = () => {
+  const handleRequestJoin = async () => {
     if (!selectedIddir) return;
-    navigate(`/resident/reports?action=new&type=iddir_membership&groupId=${selectedIddir.id}&groupName=${encodeURIComponent(selectedIddir.name)}`);
+    try {
+      setRequestingJoin(true);
+      await api.iddirs.requestMembership(selectedIddir.id);
+      toast.success('Iddir membership application submitted!');
+      fetchIddirData();
+    } catch (err) {
+      navigate(`/resident/reports?action=new&type=iddir_membership&groupId=${selectedIddir.id}&groupName=${encodeURIComponent(selectedIddir.name)}`);
+    } finally {
+      setRequestingJoin(false);
+    }
   };
 
   const handleClaimSubmit = async (e) => {

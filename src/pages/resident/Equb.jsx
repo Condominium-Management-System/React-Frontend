@@ -1,5 +1,5 @@
 // src/pages/resident/Equb.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../api/axiosConfig';
 import { toast } from 'react-toastify';
@@ -13,7 +13,7 @@ const ResidentEqub = () => {
   const [loading, setLoading] = useState(true);
   const [requestingJoin, setRequestingJoin] = useState(false);
 
-  const fetchEqubData = async () => {
+  const fetchEqubData = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.equbs.getMy();
@@ -36,16 +36,25 @@ const ResidentEqub = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [urlEqubId]);
 
-  const handleRequestJoin = () => {
+  const handleRequestJoin = async () => {
     if (!selectedEqub) return;
-    navigate(`/resident/reports?action=new&type=equb_membership&groupId=${selectedEqub.id}&groupName=${encodeURIComponent(selectedEqub.name)}`);
+    try {
+      setRequestingJoin(true);
+      await api.equbs.requestMembership(selectedEqub.id);
+      toast.success('Membership request submitted successfully!');
+      fetchEqubData();
+    } catch (err) {
+      navigate(`/resident/reports?action=new&type=equb_membership&groupId=${selectedEqub.id}&groupName=${encodeURIComponent(selectedEqub.name)}`);
+    } finally {
+      setRequestingJoin(false);
+    }
   };
 
   useEffect(() => {
     fetchEqubData();
-  }, [urlEqubId]);
+  }, [fetchEqubData]);
 
   const membersCount = selectedEqub?.members?.length || 0;
   const contribution = parseFloat(selectedEqub?.contributionAmount) || 2000;

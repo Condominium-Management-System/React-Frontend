@@ -32,7 +32,6 @@ import {
   Avatar,
   Zoom,
   Tooltip,
-  Divider,
   Alert,
 } from '@mui/material';
 import {
@@ -46,8 +45,7 @@ import {
   MonetizationOn as MoneyIcon,
   Add as AddIcon,
   AccountBalance as BankIcon,
-  Apartment as ApartmentIcon,
-} from '@mui/icons-material';
+  } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

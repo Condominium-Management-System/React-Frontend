@@ -29,35 +29,22 @@ import {
   InputLabel,
   CircularProgress,
   Avatar,
-  useTheme,
   Zoom,
   Tooltip,
   Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
   Tab,
   Tabs,
-  Alert,
-} from '@mui/material';
+  } from '@mui/material';
 import {
   Search as SearchIcon,
   Refresh as RefreshIcon,
   Report as ReportIcon,
-  Flag as FlagIcon,
   Schedule as ScheduleIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Close as CloseIcon,
-  Visibility as VisibilityIcon,
-  Edit as EditIcon,
   Send as SendIcon,
   Message as MessageIcon,
-  Assignment as AssignmentIcon,
-  Person as PersonIcon,
-  Email as EmailIcon,
-  Phone as PhoneIcon,
   Warning as WarningIcon,
   Group as GroupIcon,
   AccountBalance as SavingsIcon,
@@ -66,7 +53,7 @@ import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
 import { api } from '../../api/axiosConfig';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaRegEdit, FaRegTrashAlt, FaEye, FaCheck } from 'react-icons/fa';
+import { FaRegEdit, FaRegTrashAlt, FaEye } from 'react-icons/fa';
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: '16px',
@@ -179,8 +166,6 @@ const PriorityChip = styled(Chip)(({ theme, priority }) => ({
 }));
 
 const Reports = () => {
-  const theme = useTheme();
-  
   // State
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -933,7 +918,7 @@ const Reports = () => {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredReports.length}
+          count={totalItems || filteredReports.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

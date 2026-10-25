@@ -27,7 +27,6 @@ import {
 Search as SearchIcon,
   AccountBalance as AccountBalanceIcon,
   Shield as ShieldIcon,
-  ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
@@ -136,6 +135,9 @@ const Dashboard = () => {
     openLostFound: 0,
     totalEqubs: 0,
     totalIddirs: 0,
+    condoAccountCount: 0,
+    operationalFunds: 0,
+    primaryAccountName: 'None Configured',
   });
   const [loading, setLoading] = useState(true);
 
@@ -245,6 +247,9 @@ const Dashboard = () => {
         openLostFound,
         totalEqubs: equbsList.length,
         totalIddirs: iddirsList.length,
+        condoAccountCount,
+        operationalFunds,
+        primaryAccountName,
       });
     } catch (error) {
       console.error('Error fetching condo dashboard data:', error);
@@ -486,7 +491,9 @@ const Dashboard = () => {
                     <Typography className="stat-value" sx={{ color: '#22c55e' }}>
                       {formatCurrency(stats.totalRevenue)}
                     </Typography>
-                    <Typography className="stat-sub">From payments and dues</Typography>
+                    <Typography className="stat-sub">
+                      Reserves: {formatCurrency(stats.operationalFunds)} • {stats.primaryAccountName}
+                    </Typography>
                   </Box>
                   <Box className="stat-icon">
                     <PaymentIcon sx={{ color: '#22c55e', fontSize: 24 }} />

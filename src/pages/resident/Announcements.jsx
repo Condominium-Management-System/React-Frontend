@@ -1,5 +1,5 @@
 // src/pages/resident/Announcements.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api/axiosConfig';
 import { toast } from 'react-toastify';
@@ -13,7 +13,23 @@ const ResidentAnnouncements = () => {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('all');
 
-  const fetchAnnouncements = async () => {
+    const handleSelectAnnouncement = useCallback(async (ann) => {
+    setSelectedAnnouncement(ann);
+    navigate(`/resident/announcements/${ann.id}`);
+
+    if (!ann.isRead) {
+      try {
+        const res = await api.announcements.markRead(ann.id);
+        const newUnreadCount = res.data?.data?.unreadCount ?? 0;
+        setAnnouncements(prev => prev.map(item => item.id === ann.id ? { ...item, isRead: true } : item));
+        window.dispatchEvent(new CustomEvent('ha_announcements_read', { detail: { unreadCount: newUnreadCount } }));
+      } catch (err) {
+        console.error('Failed to mark announcement as read:', err);
+      }
+    }
+  }, [navigate]);
+
+  const fetchAnnouncements = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.announcements.getAll({ limit: 50 });
@@ -33,23 +49,7 @@ const ResidentAnnouncements = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSelectAnnouncement = async (ann) => {
-    setSelectedAnnouncement(ann);
-    navigate(`/resident/announcements/${ann.id}`);
-
-    if (!ann.isRead) {
-      try {
-        const res = await api.announcements.markRead(ann.id);
-        const newUnreadCount = res.data?.data?.unreadCount ?? 0;
-        setAnnouncements(prev => prev.map(item => item.id === ann.id ? { ...item, isRead: true } : item));
-        window.dispatchEvent(new CustomEvent('ha_announcements_read', { detail: { unreadCount: newUnreadCount } }));
-      } catch (err) {
-        console.error('Failed to mark announcement as read:', err);
-      }
-    }
-  };
+  }, [urlNoticeId, handleSelectAnnouncement]);
 
   const handleMarkAllRead = async () => {
     try {
@@ -65,7 +65,7 @@ const ResidentAnnouncements = () => {
 
   useEffect(() => {
     fetchAnnouncements();
-  }, [urlNoticeId]);
+  }, [fetchAnnouncements]);
 
   const categories = ['all', 'emergency', 'maintenance', 'water', 'electric', 'general', 'financial'];
 

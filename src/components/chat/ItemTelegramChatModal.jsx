@@ -1,5 +1,5 @@
 // src/components/chat/ItemTelegramChatModal.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,14 +13,12 @@ import {
   CircularProgress,
   Paper,
   Zoom,
-  Divider,
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Send as SendIcon,
   Chat as ChatIcon,
   LocationOn as LocationOnIcon,
-  Check as CheckIcon,
   DoneAll as DoneAllIcon,
   Campaign as CampaignIcon,
 } from '@mui/icons-material';
@@ -62,7 +60,7 @@ const ItemTelegramChatModal = ({ open, onClose, item }) => {
   };
 
   // Fetch full item discussion
-  const fetchDiscussion = async () => {
+  const fetchDiscussion = useCallback(async () => {
     if (!item?.id) return;
     try {
       setLoading(true);
@@ -75,7 +73,7 @@ const ItemTelegramChatModal = ({ open, onClose, item }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [item?.id]);
 
   useEffect(() => {
     if (!open || !item?.id) return;
@@ -117,7 +115,7 @@ const ItemTelegramChatModal = ({ open, onClose, item }) => {
     } catch (err) {
       console.warn('Socket connection warning:', err.message);
     }
-  }, [open, item?.id]);
+  }, [open, item?.id, fetchDiscussion]);
 
   useEffect(() => {
     scrollToBottom();

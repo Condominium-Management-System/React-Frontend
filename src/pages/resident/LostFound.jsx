@@ -419,7 +419,7 @@ const ResidentLostFound = () => {
                       {photos.length === 1 ? (
                         <img 
                           src={photos[0]} 
-                          alt="Attached photo" 
+                          alt="Attachment" 
                           onClick={() => setLightboxImage(photos[0])}
                           className="w-full max-h-60 object-cover rounded-xl cursor-pointer hover:opacity-90 transition shadow-sm border border-black/10" 
                           title="Click to zoom"
@@ -541,7 +541,7 @@ const ResidentLostFound = () => {
             <div className="relative max-w-4xl max-h-[90vh] flex items-center justify-center">
               <img 
                 src={lightboxImage} 
-                alt="Enlarged photo preview" 
+                alt="Enlarged preview" 
                 className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl" 
               />
               <button 

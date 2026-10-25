@@ -6,18 +6,10 @@ import {
   Grid,
   Card,
   CardContent,
-  Paper,
   Chip,
   CircularProgress,
   IconButton,
   Collapse,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  useTheme,
 } from '@mui/material';
 import {
   Report as ReportIcon,
@@ -63,7 +55,7 @@ const STATUS_COLORS = {
 };
 
 const Reports = () => {
-  const theme = useTheme();
+  
   const [loading, setLoading] = useState(true);
   const [reportStats, setReportStats] = useState([]);
   const [expandedCondo, setExpandedCondo] = useState(null);

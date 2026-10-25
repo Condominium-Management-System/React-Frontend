@@ -11,7 +11,6 @@ import {
   IconButton,
   Button,
   TextField,
-  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -30,7 +29,6 @@ import {
   Tooltip,
   Alert,
   Zoom,
-  Divider,
 } from '@mui/material';
 import {
   AccountBalance as BankIcon,
@@ -39,7 +37,6 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Star as StarIcon,
-  StarBorder as StarBorderIcon,
   CheckCircle as CheckCircleIcon,
   Close as CloseIcon,
   Refresh as RefreshIcon,
@@ -632,6 +629,84 @@ const CondoAccounts = () => {
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      {/* Transaction History Dialog */}
+      <Dialog
+        open={openTxModal}
+        onClose={() => setOpenTxModal(false)}
+        maxWidth="md"
+        fullWidth
+        TransitionComponent={Zoom}
+        PaperProps={{ sx: { borderRadius: '20px', overflow: 'hidden' } }}
+      >
+        <DialogTitle sx={{ p: 3, background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              Transaction History
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#D3AD32' }}>
+              {selectedTxAccount?.accountName} ({selectedTxAccount?.accountNumber})
+            </Typography>
+          </Box>
+          <IconButton onClick={() => setOpenTxModal(false)} sx={{ color: '#fff' }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          {loadingTx ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+              <CircularProgress sx={{ color: '#D3AD32' }} />
+            </Box>
+          ) : accountTransactions.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 6, color: '#6b7a8f' }}>
+              <ReceiptIcon sx={{ fontSize: 48, color: '#cbd5e1', mb: 1 }} />
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>No transactions recorded</Typography>
+              <Typography variant="caption">Transactions linked to this account will appear here.</Typography>
+            </Box>
+          ) : (
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+              <Table size="small">
+                <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Reference</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Amount (ETB)</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {accountTransactions.map((tx) => (
+                    <TableRow key={tx.id || tx.reference} hover>
+                      <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{tx.referenceNo || tx.reference || tx.id?.slice(0, 8)}</TableCell>
+                      <TableCell sx={{ textTransform: 'capitalize' }}>{tx.paymentType || tx.type || 'Transfer'}</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: '#16a34a' }}>{Number(tx.amount || 0).toLocaleString()} ETB</TableCell>
+                      <TableCell>{new Date(tx.createdAt || Date.now()).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={tx.status || 'completed'}
+                          size="small"
+                          sx={{
+                            bgcolor: tx.status === 'completed' || tx.status === 'approved' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(234, 179, 8, 0.1)',
+                            color: tx.status === 'completed' || tx.status === 'approved' ? '#16a34a' : '#ca8a04',
+                            fontWeight: 600,
+                            textTransform: 'capitalize'
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2, bgcolor: '#f8f9fa' }}>
+          <Button onClick={() => setOpenTxModal(false)} variant="contained" sx={{ bgcolor: '#1a1a2e', textTransform: 'none' }}>
+            Close
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );
