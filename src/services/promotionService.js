@@ -69,15 +69,16 @@ export const promotionService = {
   },
 
   getStats: async (promotions) => {
+    const list = Array.isArray(promotions) ? promotions : [];
     const stats = {
-      total: promotions.length,
-      pending: promotions.filter(p => p.status === 'pending').length,
-      approved: promotions.filter(p => p.status === 'approved').length,
-      active: promotions.filter(p => p.status === 'active').length,
-      expired: promotions.filter(p => p.status === 'expired').length,
-      rejected: promotions.filter(p => p.status === 'rejected').length,
-      cancelled: promotions.filter(p => p.status === 'cancelled').length,
-      totalRevenue: promotions.reduce((sum, p) => sum + (p.price || 0), 0),
+      total: list.length,
+      pending: list.filter(p => p.status === 'pending').length,
+      approved: list.filter(p => p.status === 'approved').length,
+      active: list.filter(p => p.status === 'active').length,
+      expired: list.filter(p => p.status === 'expired').length,
+      rejected: list.filter(p => p.status === 'rejected').length,
+      cancelled: list.filter(p => p.status === 'cancelled').length,
+      totalRevenue: list.reduce((sum, p) => sum + (parseFloat(p.price) || Number(p.price) || 0), 0),
     };
     return stats;
   }
