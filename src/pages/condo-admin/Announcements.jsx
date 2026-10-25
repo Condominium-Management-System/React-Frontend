@@ -59,6 +59,7 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
+import { announcementService } from '../../services/announcementService';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaRegEdit, FaRegTrashAlt, FaEye } from 'react-icons/fa';
 
@@ -114,60 +115,6 @@ const StatsCard = styled(Card)(({ theme, color }) => ({
   },
 }));
 
-// Mock Data
-const MOCK_ANNOUNCEMENTS = [
-  {
-    id: '1',
-    title: 'Maintenance Schedule - August 2026',
-    body: 'Please be informed that the monthly maintenance will take place on August 25-27. All residents are requested to cooperate.',
-    announcementType: 'general',
-    isPinned: true,
-    expiryDate: '2026-08-28T00:00:00.000Z',
-    createdAt: '2026-08-20T10:00:00.000Z',
-    createdBy: { fullName: 'Admin User', role: 'condo_admin' },
-  },
-  {
-    id: '2',
-    title: 'Emergency: Power Outage Notice',
-    body: 'There will be a scheduled power outage on August 22 from 2:00 AM to 6:00 AM for maintenance. Please prepare accordingly.',
-    announcementType: 'emergency',
-    isPinned: true,
-    expiryDate: '2026-08-23T00:00:00.000Z',
-    createdAt: '2026-08-21T08:30:00.000Z',
-    createdBy: { fullName: 'Admin User', role: 'condo_admin' },
-  },
-  {
-    id: '3',
-    title: 'Community Meeting - September 2026',
-    body: 'The quarterly community meeting will be held on September 5, 2026 at the community hall. All residents are invited to attend.',
-    announcementType: 'event',
-    isPinned: false,
-    expiryDate: '2026-09-06T00:00:00.000Z',
-    createdAt: '2026-08-19T14:00:00.000Z',
-    createdBy: { fullName: 'Admin User', role: 'condo_admin' },
-  },
-  {
-    id: '4',
-    title: 'Condolence Message',
-    body: 'The management extends its deepest condolences to the family of the late resident of Room 301. May his soul rest in peace.',
-    announcementType: 'mourning',
-    isPinned: false,
-    expiryDate: null,
-    createdAt: '2026-08-18T09:15:00.000Z',
-    createdBy: { fullName: 'Admin User', role: 'condo_admin' },
-  },
-  {
-    id: '5',
-    title: 'Resident Appreciation Day',
-    body: 'We are celebrating Resident Appreciation Day on August 30 with food, music, and activities for all residents!',
-    announcementType: 'celebration',
-    isPinned: false,
-    expiryDate: '2026-08-31T00:00:00.000Z',
-    createdAt: '2026-08-17T11:00:00.000Z',
-    createdBy: { fullName: 'Admin User', role: 'condo_admin' },
-  },
-];
-
 const Announcements = () => {
   const theme = useTheme();
   
@@ -211,35 +158,17 @@ const Announcements = () => {
   const fetchAnnouncements = async () => {
     try {
       setLoading(true);
+      const data = await announcementService.getAll({ limit: 100 });
+      const items = data?.items || data || [];
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      setAnnouncements(items);
+      setTotalItems(items.length);
       
-      setAnnouncements(MOCK_ANNOUNCEMENTS);
-      setTotalItems(MOCK_ANNOUNCEMENTS.length);
-      
-      // Calculate stats
-      const pinned = MOCK_ANNOUNCEMENTS.filter(a => a.isPinned).length;
-      const active = MOCK_ANNOUNCEMENTS.filter(a => !a.expiryDate || new Date(a.expiryDate) > new Date()).length;
-      const expired = MOCK_ANNOUNCEMENTS.filter(a => a.expiryDate && new Date(a.expiryDate) < new Date()).length;
-      
-      setStats({
-        total: MOCK_ANNOUNCEMENTS.length,
-        pinned,
-        active,
-        expired,
-        byType: {
-          general: MOCK_ANNOUNCEMENTS.filter(a => a.announcementType === 'general').length,
-          emergency: MOCK_ANNOUNCEMENTS.filter(a => a.announcementType === 'emergency').length,
-          event: MOCK_ANNOUNCEMENTS.filter(a => a.announcementType === 'event').length,
-          celebration: MOCK_ANNOUNCEMENTS.filter(a => a.announcementType === 'celebration').length,
-          mourning: MOCK_ANNOUNCEMENTS.filter(a => a.announcementType === 'mourning').length,
-        }
-      });
-      
+      const stats = await announcementService.getStats(items);
+      setStats(stats);
     } catch (error) {
-      console.error('❌ Error fetching announcements:', error);
-      toast.error('Failed to fetch announcements');
+      console.error('Error fetching announcements:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch announcements');
     } finally {
       setLoading(false);
     }
@@ -279,68 +208,61 @@ const Announcements = () => {
   // Handle submit
   const handleSubmit = async () => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!formData.title || !formData.body) {
+        toast.error('Title and body are required');
+        return;
+      }
       
-      const newAnnouncement = {
-        id: Date.now().toString(),
+      const payload = {
         title: formData.title,
         body: formData.body,
         announcementType: formData.announcementType,
         isPinned: formData.isPinned,
-        expiryDate: formData.expiryDate || null,
-        createdAt: new Date().toISOString(),
-        createdBy: { fullName: 'Admin User', role: 'condo_admin' },
+        expiryDate: formData.expiryDate ? new Date(formData.expiryDate).toISOString() : null,
       };
-      
+
       if (editingAnnouncement) {
-        const updated = announcements.map(a => 
-          a.id === editingAnnouncement.id ? { ...a, ...newAnnouncement } : a
-        );
-        setAnnouncements(updated);
+        await announcementService.update(editingAnnouncement.id, payload);
         toast.success('Announcement updated successfully!');
       } else {
-        setAnnouncements([newAnnouncement, ...announcements]);
+        await announcementService.create(payload);
         toast.success('Announcement created successfully!');
       }
       
       setOpenModal(false);
       resetForm();
-      fetchAnnouncements();
+      await fetchAnnouncements();
     } catch (error) {
-      toast.error('Failed to save announcement');
+      console.error('Error saving announcement:', error);
+      toast.error(error.response?.data?.message || 'Failed to save announcement');
     }
   };
 
-  // Handle delete
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this announcement?')) return;
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const updated = announcements.filter(a => a.id !== id);
-      setAnnouncements(updated);
+      await announcementService.delete(id);
       toast.success('Announcement deleted successfully!');
-      fetchAnnouncements();
+      await fetchAnnouncements();
     } catch (error) {
-      toast.error('Failed to delete announcement');
+      console.error('Error deleting announcement:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete announcement');
     }
   };
 
-  // Handle toggle pin
   const handleTogglePin = async (id) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const updated = announcements.map(a => 
-        a.id === id ? { ...a, isPinned: !a.isPinned } : a
-      );
-      setAnnouncements(updated);
-      toast.success(updated.find(a => a.id === id)?.isPinned ? 'Announcement pinned!' : 'Announcement unpinned!');
-      fetchAnnouncements();
+      const target = announcements.find(a => a.id === id);
+      const newPinned = !target?.isPinned;
+      await announcementService.update(id, { isPinned: newPinned });
+      toast.success(newPinned ? 'Announcement pinned!' : 'Announcement unpinned!');
+      await fetchAnnouncements();
     } catch (error) {
-      toast.error('Failed to toggle pin');
+      console.error('Error toggling pin:', error);
+      toast.error(error.response?.data?.message || 'Failed to toggle pin');
     }
   };
 
-  // Reset form
   const resetForm = () => {
     setEditingAnnouncement(null);
     setFormData({
@@ -735,7 +657,7 @@ const Announcements = () => {
       </StyledTableContainer>
 
       {/* Create/Edit Modal */}
-      <Dialog 
+      <Dialog disableRestoreFocus  
         open={openModal} 
         onClose={() => setOpenModal(false)} 
         maxWidth="md" 
@@ -876,7 +798,7 @@ const Announcements = () => {
       </Dialog>
 
       {/* Detail Modal */}
-      <Dialog 
+      <Dialog disableRestoreFocus  
         open={openDetailModal} 
         onClose={() => setOpenDetailModal(false)} 
         maxWidth="md" 
