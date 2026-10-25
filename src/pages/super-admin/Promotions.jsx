@@ -1,5 +1,5 @@
 // src/pages/super-admin/Promotions.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Checkbox,
   ListItemText,
@@ -31,35 +31,28 @@ import {
   InputLabel,
   CircularProgress,
   Avatar,
-  useTheme,
   Zoom,
   Tooltip,
-  Divider,
-  Alert,
-} from '@mui/material';
+  } from '@mui/material';
 import {
   Search as SearchIcon,
   Refresh as RefreshIcon,
   Add as AddIcon,
   Store as StoreIcon,
-  CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
-  Close as CloseIcon,
-  Upload as UploadIcon,
   Image as ImageIcon,
   TrendingUp as TrendingUpIcon,
   Verified as VerifiedIcon,
   Visibility as VisibilityIcon,
   MonetizationOn as MoneyIcon,
-  Schedule as ScheduleIcon,
-  Warning as WarningIcon,
+  
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
 import { promotionService } from '../../services/promotionService';
 import { api } from '../../api/axiosConfig';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaRegEdit, FaRegTrashAlt, FaEye, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaRegEdit, FaRegTrashAlt, FaEye } from 'react-icons/fa';
 import { MdOutlinePending, MdApproval } from 'react-icons/md';
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
@@ -143,8 +136,6 @@ const StatusChip = styled(Chip)(({ theme, status }) => ({
 }));
 
 const Promotions = () => {
-  const theme = useTheme();
-  
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -204,7 +195,7 @@ const Promotions = () => {
     rejectionReason: '' 
   });
 
-  const fetchPromotions = async () => {
+  const fetchPromotions = useCallback(async () => {
     try {
       setLoading(true);
       const params = { status: 'all', limit: 100 };
@@ -223,10 +214,10 @@ const Promotions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [condoFilter]);
 
   useEffect(() => { fetchCondos(); }, []);
-  useEffect(() => { fetchPromotions(); }, [condoFilter]);
+  useEffect(() => { fetchPromotions(); }, [fetchPromotions]);
 
   const filteredPromotions = promotions.filter(promo => {
     const matchesSearch = 
@@ -442,7 +433,7 @@ const Promotions = () => {
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel>Filter by Condominium</InputLabel>
-            <Select value={condoFilter} onChange={(e) => setCondoFilter(e.target.value)} label="Filter by Condominium" sx={{ borderRadius: '10px' }}>
+            <Select disabled={condosLoading} value={condoFilter} onChange={(e) => setCondoFilter(e.target.value)} label="Filter by Condominium" sx={{ borderRadius: '10px' }}>
               <MenuItem value="ALL">All Condominiums</MenuItem>
               <MenuItem value="GLOBAL">Global (All Condominiums)</MenuItem>
               {condos.map(c => (
@@ -517,7 +508,7 @@ const Promotions = () => {
             ))}
           </TableBody>
         </Table>
-        <TablePagination rowsPerPageOptions={[5, 10, 25]} component="div" count={filteredPromotions.length} rowsPerPage={rowsPerPage} page={page} onPageChange={(e, p) => setPage(p)} onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }} />
+        <TablePagination rowsPerPageOptions={[5, 10, 25]} component="div" count={totalItems || filteredPromotions.length} rowsPerPage={rowsPerPage} page={page} onPageChange={(e, p) => setPage(p)} onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }} />
       </StyledTableContainer>
 
       {/* Create/Edit Modal */}
