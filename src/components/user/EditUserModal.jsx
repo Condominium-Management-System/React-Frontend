@@ -31,13 +31,15 @@ const StyledDialog = styled(Dialog)(() => ({
     borderRadius: '20px',
     boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
     overflow: 'hidden',
-    maxWidth: '560px',
+    maxWidth: '580px',
     width: '100%',
   },
 }));
 
 const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true }) => {
   const [loading, setLoading] = useState(false);
+  const [loadingBlocks, setLoadingBlocks] = useState(false);
+  const [loadingRooms, setLoadingRooms] = useState(false);
   const [error, setError] = useState(null);
 
   // Dynamic lists
@@ -45,6 +47,7 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
   const [blocks, setBlocks] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [selectedBlockId, setSelectedBlockId] = useState('');
+  const [selectedFloor, setSelectedFloor] = useState('');
   const [selectedRoomId, setSelectedRoomId] = useState('');
 
   const [formData, setFormData] = useState({
@@ -76,6 +79,7 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
       return;
     }
     try {
+      setLoadingBlocks(true);
       const res = await api.blocks.getAll(condoId);
       const raw = res.data?.data;
       const list = Array.isArray(raw)
@@ -87,6 +91,8 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
     } catch (err) {
       console.error('Failed to fetch blocks:', err);
       setBlocks([]);
+    } finally {
+      setLoadingBlocks(false);
     }
   }, []);
 
@@ -97,12 +103,15 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
       return;
     }
     try {
+      setLoadingRooms(true);
       const res = await api.rooms.getAll(condoId, { blockId });
       const raw = res.data?.data || [];
       setRooms(Array.isArray(raw) ? raw : []);
     } catch (err) {
       console.error('Failed to fetch rooms:', err);
       setRooms([]);
+    } finally {
+      setLoadingRooms(false);
     }
   }, []);
 
@@ -112,8 +121,9 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
     }
   }, [isOpen, fetchCondos]);
 
+  // Sync user prop to form state
   useEffect(() => {
-    if (user) {
+    if (user && isOpen) {
       setFormData({
         fullName: user.fullName || '',
         email: user.email || '',
@@ -126,17 +136,43 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
         isVerified: !!user.isVerified,
       });
 
+      setSelectedBlockId('');
+      setSelectedFloor('');
+      setSelectedRoomId('');
+
       if (user.condoId) {
         fetchBlocks(user.condoId);
       }
     }
-  }, [user, fetchBlocks]);
+  }, [user, isOpen, fetchBlocks]);
 
+  // Match existing block once blocks are loaded
   useEffect(() => {
-    if (formData.condoId && selectedBlockId) {
-      fetchRooms(formData.condoId, selectedBlockId);
+    if (blocks.length > 0 && formData.block && !selectedBlockId) {
+      const matched = blocks.find(
+        (b) => String(b.blockNo).toLowerCase() === String(formData.block).toLowerCase()
+      );
+      if (matched) {
+        setSelectedBlockId(matched.id);
+        fetchRooms(formData.condoId, matched.id);
+      }
     }
-  }, [formData.condoId, selectedBlockId, fetchRooms]);
+  }, [blocks, formData.block, formData.condoId, selectedBlockId, fetchRooms]);
+
+  // Match existing room once rooms are loaded
+  useEffect(() => {
+    if (rooms.length > 0 && formData.roomNo && !selectedRoomId) {
+      const matched = rooms.find(
+        (r) => String(r.roomNo).toLowerCase() === String(formData.roomNo).toLowerCase()
+      );
+      if (matched) {
+        setSelectedRoomId(matched.id);
+        if (matched.floorNo) {
+          setSelectedFloor(matched.floorNo);
+        }
+      }
+    }
+  }, [rooms, formData.roomNo, selectedRoomId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -155,22 +191,43 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
       roomNo: '',
     }));
     setSelectedBlockId('');
+    setSelectedFloor('');
     setSelectedRoomId('');
-    fetchBlocks(condoId);
+    setBlocks([]);
+    setRooms([]);
+    if (condoId) {
+      fetchBlocks(condoId);
+    }
   };
 
   const handleBlockChange = (e) => {
     const blockId = e.target.value;
     const selected = blocks.find((b) => b.id === blockId);
     setSelectedBlockId(blockId);
+    setSelectedFloor('');
+    setSelectedRoomId('');
     setFormData((prev) => ({
       ...prev,
       block: selected ? selected.blockNo : '',
       roomNo: '',
     }));
-    setSelectedRoomId('');
     if (formData.condoId && blockId) {
       fetchRooms(formData.condoId, blockId);
+    } else {
+      setRooms([]);
+    }
+  };
+
+  const handleFloorChange = (e) => {
+    const floor = e.target.value;
+    setSelectedFloor(floor);
+    // If current selected room is on a different floor, clear it
+    if (selectedRoomId) {
+      const currentRoom = rooms.find((r) => r.id === selectedRoomId);
+      if (currentRoom && floor && Number(currentRoom.floorNo) !== Number(floor)) {
+        setSelectedRoomId('');
+        setFormData((prev) => ({ ...prev, roomNo: '' }));
+      }
     }
   };
 
@@ -234,6 +291,14 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
       setLoading(false);
     }
   };
+
+  const selectedBlock = blocks.find((b) => b.id === selectedBlockId);
+  const floorOptions = selectedBlock?.noFloors
+    ? Array.from({ length: selectedBlock.noFloors }, (_, i) => i + 1)
+    : [];
+  const availableRooms = rooms.filter(
+    (r) => !selectedFloor || Number(r.floorNo) === Number(selectedFloor)
+  );
 
   return (
     <StyledDialog open={isOpen} onClose={onClose} maxWidth="sm" fullWidth>
@@ -326,7 +391,7 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
             </FormControl>
           )}
 
-          {/* Condominium selection if Super Admin */}
+          {/* Condominium selection */}
           {canChangeRole && (
             <FormControl fullWidth>
               <InputLabel>Condominium</InputLabel>
@@ -348,14 +413,17 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
             </FormControl>
           )}
 
-          {/* Dynamic Block & Room dropdowns */}
+          {/* Hierarchy-aware Block, Floor & Room Dropdowns */}
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Block</InputLabel>
+            {/* Block Selector */}
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth disabled={!formData.condoId || loadingBlocks}>
+                <InputLabel>
+                  {loadingBlocks ? 'Loading...' : 'Block'}
+                </InputLabel>
                 <Select
                   value={selectedBlockId}
-                  label="Block"
+                  label={loadingBlocks ? 'Loading...' : 'Block'}
                   onChange={handleBlockChange}
                   sx={{ borderRadius: '10px', bgcolor: '#fff' }}
                 >
@@ -364,33 +432,74 @@ const EditUserModal = ({ isOpen, user, onClose, onSuccess, canChangeRole = true 
                   </MenuItem>
                   {blocks.map((b) => (
                     <MenuItem key={b.id} value={b.id}>
-                      {b.blockNo}
+                      Block {b.blockNo} ({b.noFloors} fl)
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth disabled={!selectedBlockId && !formData.block}>
-                <InputLabel>Room</InputLabel>
+
+            {/* Floor Selector */}
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth disabled={!selectedBlockId || floorOptions.length === 0}>
+                <InputLabel>Floor</InputLabel>
+                <Select
+                  value={selectedFloor}
+                  label="Floor"
+                  onChange={handleFloorChange}
+                  sx={{ borderRadius: '10px', bgcolor: '#fff' }}
+                >
+                  <MenuItem value="">
+                    <em>All Floors</em>
+                  </MenuItem>
+                  {floorOptions.map((f) => (
+                    <MenuItem key={f} value={f}>
+                      Floor {f}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Room Selector */}
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth disabled={!selectedBlockId || loadingRooms}>
+                <InputLabel>
+                  {loadingRooms ? 'Loading...' : 'Room'}
+                </InputLabel>
                 <Select
                   value={selectedRoomId}
-                  label="Room"
+                  label={loadingRooms ? 'Loading...' : 'Room'}
                   onChange={handleRoomChange}
                   sx={{ borderRadius: '10px', bgcolor: '#fff' }}
                 >
                   <MenuItem value="">
-                    <em>{formData.roomNo ? `Current: Unit ${formData.roomNo}` : 'None'}</em>
+                    <em>{formData.roomNo ? `Current: ${formData.roomNo}` : 'None'}</em>
                   </MenuItem>
-                  {rooms.map((r) => (
-                    <MenuItem key={r.id} value={r.id}>
-                      Unit {r.roomNo} ({r.model}, {r.status})
-                    </MenuItem>
-                  ))}
+                  {availableRooms.map((r) => {
+                    const isOccupied = r.status === 'occupied';
+                    // Allow keeping the current room if it belongs to this user
+                    const isUserCurrentRoom =
+                      (user?.roomNo && String(r.roomNo) === String(user.roomNo)) ||
+                      (r.occupiedById && r.occupiedById === user?.id);
+                    const disabled = isOccupied && !isUserCurrentRoom;
+
+                    return (
+                      <MenuItem key={r.id} value={r.id} disabled={disabled}>
+                        Unit {r.roomNo} (Fl {r.floorNo}, {isOccupied ? (isUserCurrentRoom ? 'Current' : 'Occupied') : 'Free'})
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Grid>
           </Grid>
+
+          {formData.roomNo && (
+            <Alert severity="info" sx={{ py: 0.5, borderRadius: '8px' }}>
+              Selected Unit: <strong>Block {formData.block || 'N/A'}</strong>, <strong>Room {formData.roomNo}</strong> {selectedFloor ? `(Floor ${selectedFloor})` : ''}
+            </Alert>
+          )}
 
           <FormControlLabel
             control={

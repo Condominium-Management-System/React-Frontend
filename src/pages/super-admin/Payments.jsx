@@ -1,5 +1,6 @@
 // src/pages/super-admin/Payments.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -28,10 +29,10 @@ import {
   FormControl,
   InputLabel,
   CircularProgress,
-  useTheme,
+  Avatar,
   Zoom,
   Tooltip,
-  Divider,
+  Alert,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -40,52 +41,37 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Close as CloseIcon,
-  Visibility as VisibilityIcon,
   Schedule as ScheduleIcon,
-  TrendingUp as TrendingUpIcon,
   MonetizationOn as MoneyIcon,
-  AccountBalance as AccountBalanceIcon,
-  Receipt as ReceiptIcon,
   Apartment as ApartmentIcon,
+  AccountBalance as BankIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaEye } from 'react-icons/fa';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from 'recharts';
+import { FaEye, FaCheck, FaTimes } from 'react-icons/fa';
+import { api } from '../../api/axiosConfig';
 
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+const StyledTableContainer = styled(TableContainer)(() => ({
   borderRadius: '16px',
-  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-  border: '1px solid rgba(0,0,0,0.06)',
+  boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+  border: '1px solid rgba(0,0,0,0.05)',
   background: '#ffffff',
   '& .MuiTableHead-root': {
     background: 'linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%)',
   },
   '& .MuiTableCell-head': {
     fontWeight: 600,
-    fontSize: '0.7rem',
+    fontSize: '0.75rem',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     color: '#6b7a8f',
-    padding: '10px 14px',
+    padding: '14px 20px',
     borderBottom: '2px solid #e9ecef',
   },
   '& .MuiTableCell-body': {
-    padding: '10px 14px',
-    fontSize: '0.8rem',
+    padding: '14px 20px',
+    fontSize: '0.875rem',
     color: '#2d3436',
     borderBottom: '1px solid #f1f3f5',
   },
@@ -94,712 +80,795 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   },
 }));
 
-const StatsCard = styled(Card)(({ theme, color }) => ({
-  borderRadius: '12px',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-  border: '1px solid rgba(0,0,0,0.04)',
-  background: '#ffffff',
+const StatsCard = styled(Card, { shouldForwardProp: (prop) => prop !== 'active' && prop !== 'color' })(({ color, active }) => ({
+  borderRadius: '16px',
+  boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+  border: `1px solid ${active ? color : 'rgba(0,0,0,0.04)'}`,
+  background: active ? `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)` : '#ffffff',
   transition: 'all 0.3s ease',
+  cursor: 'pointer',
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+    transform: 'translateY(-3px)',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
   },
   '.stat-icon': {
-    width: 36,
-    height: 36,
-    borderRadius: '10px',
+    width: 44,
+    height: 44,
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: color || '#f0f4ff',
-  },
-  '.stat-value': {
-    fontSize: '1.25rem',
-    fontWeight: 700,
-    color: '#1a1a2e',
-  },
-  '.stat-label': {
-    fontSize: '0.7rem',
-    fontWeight: 500,
-    color: '#6b7a8f',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
+    background: color ? `${color}15` : '#f0f4ff',
+    color: color || '#D3AD32',
   },
 }));
 
-// Mock Data - Condo Focused
-const MOCK_CONDOS = [
-  {
-    id: '1',
-    name: 'Ye Kondominium 01',
-    code: 'YEKONDO-001',
-    totalPayments: 125000,
-    totalTransactions: 25,
-    breakdown: {
-      equb: { amount: 50000, count: 10 },
-      iddir: { amount: 30000, count: 6 },
-      serviceCharge: { amount: 25000, count: 5 },
-      guardFee: { amount: 20000, count: 4 },
-    },
-    monthlyData: [
-      { month: 'Jan', amount: 15000 },
-      { month: 'Feb', amount: 18000 },
-      { month: 'Mar', amount: 20000 },
-      { month: 'Apr', amount: 22000 },
-      { month: 'May', amount: 25000 },
-      { month: 'Jun', amount: 25000 },
-    ],
-    recentTransactions: [
-      { id: 't1', reference: 'HX-20260820-001', amount: 500, purpose: 'Equb Contribution', status: 'completed', date: '2026-08-20' },
-      { id: 't2', reference: 'HX-20260820-002', amount: 1000, purpose: 'Iddir Contribution', status: 'completed', date: '2026-08-20' },
-      { id: 't3', reference: 'HX-20260819-003', amount: 750, purpose: 'Service Charge', status: 'pending', date: '2026-08-19' },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Sunrise Condominium',
-    code: 'SUNRISE-001',
-    totalPayments: 87000,
-    totalTransactions: 18,
-    breakdown: {
-      equb: { amount: 35000, count: 7 },
-      iddir: { amount: 22000, count: 5 },
-      serviceCharge: { amount: 18000, count: 4 },
-      guardFee: { amount: 12000, count: 2 },
-    },
-    monthlyData: [
-      { month: 'Jan', amount: 10000 },
-      { month: 'Feb', amount: 12000 },
-      { month: 'Mar', amount: 14000 },
-      { month: 'Apr', amount: 16000 },
-      { month: 'May', amount: 17000 },
-      { month: 'Jun', amount: 18000 },
-    ],
-    recentTransactions: [
-      { id: 't4', reference: 'HX-20260819-004', amount: 200, purpose: 'Guard Fee', status: 'completed', date: '2026-08-19' },
-      { id: 't5', reference: 'HX-20260818-005', amount: 300, purpose: 'Equb Contribution', status: 'rejected', date: '2026-08-18' },
-    ],
-  },
-  {
-    id: '3',
-    name: 'Green Valley Towers',
-    code: 'GV-002',
-    totalPayments: 58000,
-    totalTransactions: 12,
-    breakdown: {
-      equb: { amount: 20000, count: 4 },
-      iddir: { amount: 15000, count: 3 },
-      serviceCharge: { amount: 13000, count: 3 },
-      guardFee: { amount: 10000, count: 2 },
-    },
-    monthlyData: [
-      { month: 'Jan', amount: 8000 },
-      { month: 'Feb', amount: 9000 },
-      { month: 'Mar', amount: 10000 },
-      { month: 'Apr', amount: 10000 },
-      { month: 'May', amount: 11000 },
-      { month: 'Jun', amount: 10000 },
-    ],
-    recentTransactions: [
-      { id: 't6', reference: 'HX-20260818-006', amount: 600, purpose: 'Service Charge', status: 'pending', date: '2026-08-18' },
-    ],
-  },
-];
+const SuperAdminPayments = () => {
+  const [searchParams] = useSearchParams();
 
-const Payments = () => {
-  const theme = useTheme();
-  const [loading, setLoading] = useState(true);
+  // State
+  const [payments, setPayments] = useState([]);
   const [condos, setCondos] = useState([]);
+  const [selectedCondoId, setSelectedCondoId] = useState('ALL');
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [typeFilter, setTypeFilter] = useState('ALL');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
-  const [stats, setStats] = useState({
-    totalPayments: 0,
-    totalTransactions: 0,
-    totalEqub: 0,
-    totalIddir: 0,
-    totalServiceCharge: 0,
-  });
-  const [openDetailModal, setOpenDetailModal] = useState(false);
-  const [selectedCondo, setSelectedCondo] = useState(null);
 
-  const fetchData = async () => {
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    totalCollectedVolume: '0.00',
+  });
+
+  // Modal States
+  const [openDetailModal, setOpenDetailModal] = useState(false);
+  const [openApproveModal, setOpenApproveModal] = useState(false);
+  const [openRejectModal, setOpenRejectModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [adminNotes, setAdminNotes] = useState('');
+  const [rejectReason, setRejectReason] = useState('');
+  const [processingAction, setProcessingAction] = useState(false);
+
+  // Sync URL search params
+  useEffect(() => {
+    const statusParam = searchParams.get('status')?.toLowerCase();
+    if (statusParam === 'pending') setStatusFilter('pending');
+    else if (statusParam === 'approved') setStatusFilter('approved');
+    else if (statusParam === 'rejected') setStatusFilter('rejected');
+  }, [searchParams]);
+
+  // Fetch Condos
+  useEffect(() => {
+    const fetchCondos = async () => {
+      try {
+        const res = await api.condos.getAll();
+        setCondos(res.data?.data || []);
+      } catch (e) {
+        console.error('Failed to load condos:', e);
+      }
+    };
+    fetchCondos();
+  }, []);
+
+  // Fetch payments from live backend
+  const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setCondos(MOCK_CONDOS);
-      setTotalItems(MOCK_CONDOS.length);
-      
-      const totals = MOCK_CONDOS.reduce((acc, condo) => ({
-        totalPayments: acc.totalPayments + condo.totalPayments,
-        totalTransactions: acc.totalTransactions + condo.totalTransactions,
-        totalEqub: acc.totalEqub + condo.breakdown.equb.amount,
-        totalIddir: acc.totalIddir + condo.breakdown.iddir.amount,
-        totalServiceCharge: acc.totalServiceCharge + condo.breakdown.serviceCharge.amount,
-      }), {
-        totalPayments: 0,
-        totalTransactions: 0,
-        totalEqub: 0,
-        totalIddir: 0,
-        totalServiceCharge: 0,
+      const params = {
+        ...(selectedCondoId !== 'ALL' ? { condoId: selectedCondoId } : {}),
+        page: page + 1,
+        limit: rowsPerPage,
+        ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
+        ...(typeFilter !== 'ALL' ? { paymentType: typeFilter } : {}),
+        ...(searchTerm.trim() ? { search: searchTerm.trim() } : {}),
+      };
+
+      const statParams = selectedCondoId !== 'ALL' ? { condoId: selectedCondoId } : {};
+
+      const [paymentsRes, statsRes] = await Promise.all([
+        api.payments.getAll(params),
+        api.payments.getStatistics(statParams),
+      ]);
+
+      const data = paymentsRes.data?.data;
+      const list = Array.isArray(data) ? data : data?.payments || [];
+      const totalCount = data?.pagination?.total ?? list.length;
+
+      setPayments(list);
+      setTotalItems(totalCount);
+
+      const statData = statsRes.data?.data || {};
+      setStats({
+        total: statData.totalPayments || totalCount,
+        pending: statData.pendingPayments || 0,
+        approved: statData.approvedPayments || 0,
+        rejected: statData.rejectedPayments || 0,
+        totalCollectedVolume: statData.totalCollectedVolume || '0.00',
       });
-      
-      setStats(totals);
-      
     } catch (error) {
-      toast.error('Failed to fetch payment data');
+      console.error('Error fetching system-wide payments:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch payments');
     } finally {
       setLoading(false);
     }
+  }, [selectedCondoId, page, rowsPerPage, statusFilter, typeFilter, searchTerm]);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
+
+  // Approve Payment Action
+  const handleApprove = async () => {
+    if (!selectedPayment) return;
+    try {
+      setProcessingAction(true);
+      await api.payments.approve(selectedPayment.id, { adminNotes });
+      toast.success('Payment approved successfully! Member balance credited.');
+      setOpenApproveModal(false);
+      fetchPayments();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to approve payment');
+    } finally {
+      setProcessingAction(false);
+    }
   };
 
-  useEffect(() => { fetchData(); }, []);
-
-  const filteredCondos = condos.filter(c => 
-    c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.code?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const paginatedCondos = filteredCondos.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
-  const handleViewDetails = (condo) => {
-    setSelectedCondo(condo);
-    setOpenDetailModal(true);
+  // Reject Payment Action
+  const handleReject = async () => {
+    if (!selectedPayment) return;
+    if (!rejectReason.trim()) {
+      toast.error('Please provide a reason for rejecting this payment');
+      return;
+    }
+    try {
+      setProcessingAction(true);
+      await api.payments.reject(selectedPayment.id, { adminNotes: rejectReason.trim() });
+      toast.success('Payment marked as rejected');
+      setOpenRejectModal(false);
+      fetchPayments();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to reject payment');
+    } finally {
+      setProcessingAction(false);
+    }
   };
 
-  const formatCurrency = (amount) => `ETB ${amount?.toLocaleString() || 0}`;
-
-  // Chart Data
-  const dailyChartData = [
-    { day: 'Mon', amount: 5000 },
-    { day: 'Tue', amount: 8000 },
-    { day: 'Wed', amount: 12000 },
-    { day: 'Thu', amount: 7000 },
-    { day: 'Fri', amount: 15000 },
-    { day: 'Sat', amount: 3000 },
-    { day: 'Sun', amount: 2000 },
-  ];
-
-  const purposeData = [
-    { name: 'Equb', value: stats.totalEqub },
-    { name: 'Iddir', value: stats.totalIddir },
-    { name: 'Service Charge', value: stats.totalServiceCharge },
-    { name: 'Guard Fee', value: stats.totalPayments - stats.totalEqub - stats.totalIddir - stats.totalServiceCharge },
-  ];
-
-  const COLORS = ['#D3AD32', '#4a6cf7', '#22c55e', '#8b5cf6'];
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-        <CircularProgress sx={{ color: '#D3AD32' }} />
-      </Box>
-    );
-  }
+  const getStatusChip = (status) => {
+    switch (status) {
+      case 'approved':
+        return (
+          <Chip
+            icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+            label="Approved"
+            size="small"
+            sx={{ bgcolor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', fontWeight: 700 }}
+          />
+        );
+      case 'rejected':
+        return (
+          <Chip
+            icon={<CancelIcon sx={{ fontSize: 14 }} />}
+            label="Rejected"
+            size="small"
+            sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 700 }}
+          />
+        );
+      case 'pending':
+      default:
+        return (
+          <Chip
+            icon={<ScheduleIcon sx={{ fontSize: 14 }} />}
+            label="Pending Review"
+            size="small"
+            sx={{ bgcolor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', fontWeight: 700 }}
+          />
+        );
+    }
+  };
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#f8f9fa', minHeight: '100vh' }}>
       {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: '#1a1a2e', fontSize: '1.5rem' }}>
-          Payment Management
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#6b7a8f', fontSize: '0.8rem' }}>
-          Monitor payments and transactions across all condominiums
-        </Typography>
-      </Box>
-
-      {/* Stats Cards - Fixed Grid */}
-     // Stats Cards - Equal sizes, clean design
-<Grid container spacing={2} sx={{ mb: 3 }}>
-  <Grid item xs={12} sm={6} md={2.4}>
-    <Card sx={{ 
-      borderRadius: '12px', 
-      boxShadow: '0 2px 10px rgba(0,0,0,0.06)', 
-      border: '1px solid rgba(0,0,0,0.04)',
-      height: '100%',
-    }}>
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 500, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Total Payments
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a2e', fontSize: '1.1rem' }}>
-              {formatCurrency(stats.totalPayments)}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+            <Box sx={{ p: 1, bgcolor: '#D3AD32', borderRadius: '10px', color: '#fff', display: 'flex' }}>
+              <PaymentIcon />
+            </Box>
+            <Typography variant="h4" fontWeight={700} color="#1a1a2e">
+              System-Wide Payments & Financial Review
             </Typography>
           </Box>
-          <Box sx={{ 
-            width: 32, 
-            height: 32, 
-            borderRadius: '8px', 
-            background: 'rgba(107, 114, 128, 0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <PaymentIcon sx={{ color: '#6b7280', fontSize: 16 }} />
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  </Grid>
-  <Grid item xs={12} sm={6} md={2.4}>
-    <Card sx={{ 
-      borderRadius: '12px', 
-      boxShadow: '0 2px 10px rgba(0,0,0,0.06)', 
-      border: '1px solid rgba(0,0,0,0.04)',
-      height: '100%',
-    }}>
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 500, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Transactions
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a2e', fontSize: '1.1rem' }}>
-              {stats.totalTransactions}
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            width: 32, 
-            height: 32, 
-            borderRadius: '8px', 
-            background: 'rgba(59, 130, 246, 0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <ReceiptIcon sx={{ color: '#3b82f6', fontSize: 16 }} />
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  </Grid>
-  <Grid item xs={12} sm={6} md={2.4}>
-    <Card sx={{ 
-      borderRadius: '12px', 
-      boxShadow: '0 2px 10px rgba(0,0,0,0.06)', 
-      border: '1px solid rgba(0,0,0,0.04)',
-      height: '100%',
-    }}>
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 500, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Equb Total
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#D3AD32', fontSize: '1.1rem' }}>
-              {formatCurrency(stats.totalEqub)}
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            width: 32, 
-            height: 32, 
-            borderRadius: '8px', 
-            background: 'rgba(211, 173, 50, 0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <AccountBalanceIcon sx={{ color: '#D3AD32', fontSize: 16 }} />
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  </Grid>
-  <Grid item xs={12} sm={6} md={2.4}>
-    <Card sx={{ 
-      borderRadius: '12px', 
-      boxShadow: '0 2px 10px rgba(0,0,0,0.06)', 
-      border: '1px solid rgba(0,0,0,0.04)',
-      height: '100%',
-    }}>
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 500, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Iddir Total
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#8b5cf6', fontSize: '1.1rem' }}>
-              {formatCurrency(stats.totalIddir)}
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            width: 32, 
-            height: 32, 
-            borderRadius: '8px', 
-            background: 'rgba(139, 92, 246, 0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <AccountBalanceIcon sx={{ color: '#8b5cf6', fontSize: 16 }} />
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  </Grid>
-  <Grid item xs={12} sm={6} md={2.4}>
-    <Card sx={{ 
-      borderRadius: '12px', 
-      boxShadow: '0 2px 10px rgba(0,0,0,0.06)', 
-      border: '1px solid rgba(0,0,0,0.04)',
-      height: '100%',
-    }}>
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 500, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Service Charges
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#22c55e', fontSize: '1.1rem' }}>
-              {formatCurrency(stats.totalServiceCharge)}
-            </Typography>
-          </Box>
-          <Box sx={{ 
-            width: 32, 
-            height: 32, 
-            borderRadius: '8px', 
-            background: 'rgba(34, 197, 94, 0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <MoneyIcon sx={{ color: '#22c55e', fontSize: 16 }} />
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  </Grid>
-</Grid>
-
-      {/* Charts Section */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 2, borderRadius: '12px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, color: '#1a1a2e' }}>
-              Daily Transaction Volume
-            </Typography>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={dailyChartData}>
-                <defs>
-                  <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#D3AD32" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#D3AD32" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f3f5" />
-                <XAxis dataKey="day" stroke="#6b7a8f" fontSize={11} />
-                <YAxis stroke="#6b7a8f" fontSize={11} />
-                <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: '12px' }} formatter={(value) => [`ETB ${value.toLocaleString()}`, 'Amount']} />
-                <Area type="monotone" dataKey="amount" stroke="#D3AD32" fill="url(#colorVolume)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2, borderRadius: '12px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, color: '#1a1a2e' }}>
-              Payment Breakdown
-            </Typography>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={purposeData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value">
-                  {purposeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: '12px' }} formatter={(value) => [`ETB ${value.toLocaleString()}`, 'Amount']} />
-                <Legend verticalAlign="bottom" height={30} fontSize={11} />
-              </PieChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* Condo Cards */}
-      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: '#1a1a2e', fontSize: '1rem' }}>
-        Condominium Payment Overview
-      </Typography>
-      
-      {/* Search */}
-      <Paper sx={{ mb: 2, p: 1.5, borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <TextField
-            fullWidth
-            placeholder="Search by condominium name or code..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#6b7a8f', fontSize: 18 }} /></InputAdornment>,
-              sx: { borderRadius: '8px', fontSize: '0.8rem' }
-            }}
-            size="small"
-          />
-          <Button
-            variant="contained"
-            startIcon={<RefreshIcon />}
-            onClick={fetchData}
-            sx={{ 
-              background: 'linear-gradient(135deg, #D3AD32 0%, #c49a2b 100%)', 
-              color: '#fff', 
-              textTransform: 'none', 
-              borderRadius: '8px',
-              fontSize: '0.75rem',
-              px: 2,
-              '&:hover': { background: 'linear-gradient(135deg, #c49a2b 0%, #b08822 100%)' }
-            }}
-          >
-            Refresh
-          </Button>
-        </Box>
-      </Paper>
-
-      {/* Condo Cards Grid */}
-      <Grid container spacing={2}>
-        {paginatedCondos.map((condo) => (
-          <Grid item xs={12} key={condo.id}>
-            <Paper sx={{ 
-              borderRadius: '12px', 
-              boxShadow: '0 2px 12px rgba(0,0,0,0.06)', 
-              border: '1px solid rgba(0,0,0,0.04)',
-              overflow: 'hidden',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-              }
-            }}>
-              {/* Condo Header */}
-              <Box sx={{ 
-                p: 2, 
-                bgcolor: '#fafafa', 
-                borderBottom: '1px solid #f0f0f0',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Box sx={{ 
-                    width: 36, 
-                    height: 36, 
-                    borderRadius: '10px', 
-                    background: 'rgba(211, 173, 50, 0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    <ApartmentIcon sx={{ color: '#D3AD32', fontSize: 18 }} />
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1a1a2e' }}>
-                      {condo.name}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: '#6b7a8f' }}>
-                      Code: {condo.code} • {formatCurrency(condo.totalPayments)}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 0.5 }}>
-                  <Chip 
-                    label={`${condo.totalTransactions} Txns`}
-                    size="small"
-                    sx={{ backgroundColor: 'rgba(59, 130, 246, 0.08)', color: '#3b82f6', fontSize: '0.65rem', height: 22 }}
-                  />
-                  <IconButton 
-                    size="small" 
-                    onClick={() => handleViewDetails(condo)}
-                    sx={{ color: '#6b7a8f', '&:hover': { color: '#D3AD32' } }}
-                  >
-                    <FaEye size={14} />
-                  </IconButton>
-                </Box>
-              </Box>
-
-              {/* Breakdown Section */}
-              <Box sx={{ p: 2 }}>
-                <Grid container spacing={1.5}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7a8f', mb: 1, display: 'block' }}>
-                      Payment Breakdown
-                    </Typography>
-                    <Grid container spacing={1}>
-                      <Grid item xs={3}>
-                        <Box sx={{ p: 1, bgcolor: 'rgba(211, 173, 50, 0.05)', borderRadius: '6px', textAlign: 'center' }}>
-                          <Typography variant="caption" sx={{ color: '#6b7a8f', fontSize: '0.6rem' }}>Equb</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#D3AD32', fontSize: '0.8rem' }}>{formatCurrency(condo.breakdown.equb.amount)}</Typography>
-                          <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.55rem' }}>{condo.breakdown.equb.count}</Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Box sx={{ p: 1, bgcolor: 'rgba(74, 108, 247, 0.05)', borderRadius: '6px', textAlign: 'center' }}>
-                          <Typography variant="caption" sx={{ color: '#6b7a8f', fontSize: '0.6rem' }}>Iddir</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#4a6cf7', fontSize: '0.8rem' }}>{formatCurrency(condo.breakdown.iddir.amount)}</Typography>
-                          <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.55rem' }}>{condo.breakdown.iddir.count}</Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Box sx={{ p: 1, bgcolor: 'rgba(34, 197, 94, 0.05)', borderRadius: '6px', textAlign: 'center' }}>
-                          <Typography variant="caption" sx={{ color: '#6b7a8f', fontSize: '0.6rem' }}>Service</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#22c55e', fontSize: '0.8rem' }}>{formatCurrency(condo.breakdown.serviceCharge.amount)}</Typography>
-                          <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.55rem' }}>{condo.breakdown.serviceCharge.count}</Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Box sx={{ p: 1, bgcolor: 'rgba(139, 92, 246, 0.05)', borderRadius: '6px', textAlign: 'center' }}>
-                          <Typography variant="caption" sx={{ color: '#6b7a8f', fontSize: '0.6rem' }}>Guard</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#8b5cf6', fontSize: '0.8rem' }}>{formatCurrency(condo.breakdown.guardFee.amount)}</Typography>
-                          <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '0.55rem' }}>{condo.breakdown.guardFee.count}</Typography>
-                        </Box>
-                      </Grid>
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Box>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Detail Modal */}
-      <Dialog 
-        open={openDetailModal} 
-        onClose={() => setOpenDetailModal(false)} 
-        maxWidth="md" 
-        fullWidth
-        TransitionComponent={Zoom}
-        PaperProps={{
-          sx: {
-            borderRadius: '16px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-            overflow: 'hidden',
-          }
-        }}
-      >
-        <Box sx={{ 
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-          p: 2.5,
-          color: '#fff',
-        }}>
-          <DialogTitle sx={{ p: 0, fontWeight: 700, fontSize: '1.1rem' }}>
-            Payment Details - {selectedCondo?.name}
-          </DialogTitle>
-          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-            {selectedCondo?.code} • {formatCurrency(selectedCondo?.totalPayments)}
+          <Typography variant="body2" color="#6b7a8f">
+            Super Administrator oversight of all community contributions, bank transfer reviews, and collection pools across all condominiums
           </Typography>
         </Box>
-        <DialogContent sx={{ p: 3, bgcolor: '#f8f9fa' }}>
-          {selectedCondo && (
-            <Box>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7a8f', mb: 1.5, display: 'block' }}>
-                    Payment Breakdown
+
+        <Button
+          variant="outlined"
+          startIcon={<RefreshIcon />}
+          onClick={fetchPayments}
+          disabled={loading}
+          sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 600 }}
+        >
+          Refresh Data
+        </Button>
+      </Box>
+
+      {/* Stats Cards (Interactive Drill-Downs) */}
+      <Grid container spacing={2.5} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={2.4}>
+          <StatsCard
+            color="#4a6cf7"
+            active={statusFilter === 'ALL'}
+            onClick={() => { setStatusFilter('ALL'); setPage(0); }}
+          >
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 600 }}>SYSTEM PAYMENTS</Typography>
+                  <Typography variant="h5" fontWeight={700} color="#1a1a2e" sx={{ mt: 0.5 }}>{stats.total}</Typography>
+                </Box>
+                <Box className="stat-icon"><PaymentIcon /></Box>
+              </Box>
+            </CardContent>
+          </StatsCard>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={2.4}>
+          <StatsCard
+            color="#f59e0b"
+            active={statusFilter === 'pending'}
+            onClick={() => { setStatusFilter('pending'); setPage(0); }}
+          >
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 600 }}>PENDING REVIEW</Typography>
+                  <Typography variant="h5" fontWeight={700} color="#f59e0b" sx={{ mt: 0.5 }}>{stats.pending}</Typography>
+                </Box>
+                <Box className="stat-icon" sx={{ bgcolor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><ScheduleIcon /></Box>
+              </Box>
+            </CardContent>
+          </StatsCard>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={2.4}>
+          <StatsCard
+            color="#22c55e"
+            active={statusFilter === 'approved'}
+            onClick={() => { setStatusFilter('approved'); setPage(0); }}
+          >
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 600 }}>APPROVED PAYMENTS</Typography>
+                  <Typography variant="h5" fontWeight={700} color="#22c55e" sx={{ mt: 0.5 }}>{stats.approved}</Typography>
+                </Box>
+                <Box className="stat-icon" sx={{ bgcolor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}><CheckCircleIcon /></Box>
+              </Box>
+            </CardContent>
+          </StatsCard>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={2.4}>
+          <StatsCard
+            color="#ef4444"
+            active={statusFilter === 'rejected'}
+            onClick={() => { setStatusFilter('rejected'); setPage(0); }}
+          >
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 600 }}>REJECTED</Typography>
+                  <Typography variant="h5" fontWeight={700} color="#ef4444" sx={{ mt: 0.5 }}>{stats.rejected}</Typography>
+                </Box>
+                <Box className="stat-icon" sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><CancelIcon /></Box>
+              </Box>
+            </CardContent>
+          </StatsCard>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={2.4}>
+          <StatsCard
+            color="#10b981"
+            onClick={() => { setStatusFilter('approved'); setPage(0); }}
+          >
+            <CardContent sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f', fontWeight: 600 }}>TOTAL COLLECTED (ETB)</Typography>
+                  <Typography variant="h6" fontWeight={800} color="#10b981" sx={{ mt: 0.5 }}>
+                    ETB {Number(stats.totalCollectedVolume).toLocaleString()}
                   </Typography>
-                  <Grid container spacing={1}>
-                    <Grid item xs={6} md={3}>
-                      <Paper sx={{ p: 1.5, textAlign: 'center', bgcolor: 'rgba(211, 173, 50, 0.05)', borderRadius: '8px' }}>
-                        <Typography variant="caption" sx={{ color: '#6b7a8f' }}>Equb</Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#D3AD32' }}>{formatCurrency(selectedCondo.breakdown.equb.amount)}</Typography>
-                        <Typography variant="caption" sx={{ color: '#9ca3af' }}>{selectedCondo.breakdown.equb.count} txns</Typography>
-                      </Paper>
-                    </Grid>
-                    <Grid item xs={6} md={3}>
-                      <Paper sx={{ p: 1.5, textAlign: 'center', bgcolor: 'rgba(74, 108, 247, 0.05)', borderRadius: '8px' }}>
-                        <Typography variant="caption" sx={{ color: '#6b7a8f' }}>Iddir</Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#4a6cf7' }}>{formatCurrency(selectedCondo.breakdown.iddir.amount)}</Typography>
-                        <Typography variant="caption" sx={{ color: '#9ca3af' }}>{selectedCondo.breakdown.iddir.count} txns</Typography>
-                      </Paper>
-                    </Grid>
-                    <Grid item xs={6} md={3}>
-                      <Paper sx={{ p: 1.5, textAlign: 'center', bgcolor: 'rgba(34, 197, 94, 0.05)', borderRadius: '8px' }}>
-                        <Typography variant="caption" sx={{ color: '#6b7a8f' }}>Service</Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#22c55e' }}>{formatCurrency(selectedCondo.breakdown.serviceCharge.amount)}</Typography>
-                        <Typography variant="caption" sx={{ color: '#9ca3af' }}>{selectedCondo.breakdown.serviceCharge.count} txns</Typography>
-                      </Paper>
-                    </Grid>
-                    <Grid item xs={6} md={3}>
-                      <Paper sx={{ p: 1.5, textAlign: 'center', bgcolor: 'rgba(139, 92, 246, 0.05)', borderRadius: '8px' }}>
-                        <Typography variant="caption" sx={{ color: '#6b7a8f' }}>Guard</Typography>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#8b5cf6' }}>{formatCurrency(selectedCondo.breakdown.guardFee.amount)}</Typography>
-                        <Typography variant="caption" sx={{ color: '#9ca3af' }}>{selectedCondo.breakdown.guardFee.count} txns</Typography>
-                      </Paper>
-                    </Grid>
+                </Box>
+                <Box className="stat-icon" sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}><MoneyIcon /></Box>
+              </Box>
+            </CardContent>
+          </StatsCard>
+        </Grid>
+      </Grid>
+
+      {/* Filter and Search Bar */}
+      <Paper sx={{ p: 2, mb: 3, borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6} md={3.5}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Filter by Condominium</InputLabel>
+              <Select
+                value={selectedCondoId}
+                label="Filter by Condominium"
+                onChange={(e) => { setSelectedCondoId(e.target.value); setPage(0); }}
+                sx={{ borderRadius: '10px' }}
+              >
+                <MenuItem value="ALL">All Condominiums (System-Wide)</MenuItem>
+                {condos.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.condoName} ({c.condoCode})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3.5}>
+            <TextField
+              size="small"
+              fullWidth
+              placeholder="Search by payer, reference, phone, or unit..."
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: '#9ca3af' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+            />
+          </Grid>
+
+          <Grid item xs={6} sm={3} md={2.5}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={statusFilter}
+                label="Status"
+                onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+                sx={{ borderRadius: '10px' }}
+              >
+                <MenuItem value="ALL">All Statuses</MenuItem>
+                <MenuItem value="pending">Pending Review</MenuItem>
+                <MenuItem value="approved">Approved</MenuItem>
+                <MenuItem value="rejected">Rejected</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={6} sm={3} md={2.5}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={typeFilter}
+                label="Type"
+                onChange={(e) => { setTypeFilter(e.target.value); setPage(0); }}
+                sx={{ borderRadius: '10px' }}
+              >
+                <MenuItem value="ALL">All Types</MenuItem>
+                <MenuItem value="equb">Equb Contribution</MenuItem>
+                <MenuItem value="iddir">Iddir Contribution</MenuItem>
+                <MenuItem value="guard_fee">Guard Fee</MenuItem>
+                <MenuItem value="service_charge">Service Charge</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Payments Table */}
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress sx={{ color: '#D3AD32' }} />
+        </Box>
+      ) : (
+        <>
+          <StyledTableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Reference / Ref No</TableCell>
+                  <TableCell>Condominium</TableCell>
+                  <TableCell>Payer & Unit</TableCell>
+                  <TableCell>Purpose & Target</TableCell>
+                  <TableCell>Payment Method</TableCell>
+                  <TableCell align="right">Amount</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell align="center">Status</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {payments.length > 0 ? (
+                  payments.map((p) => {
+                    const isPending = p.status === 'pending';
+                    const reference = p.transaction?.referenceNo || `HX-${p.id.slice(0, 8).toUpperCase()}`;
+
+                    return (
+                      <TableRow key={p.id} hover>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={700} color="#1a1a2e">
+                            {reference}
+                          </Typography>
+                          <Typography variant="caption" color="#6b7a8f">
+                            {p.monthYear ? `Period: ${p.monthYear}` : 'Direct Contribution'}
+                          </Typography>
+                        </TableCell>
+
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600} color="#1a1a2e">
+                            {p.condo?.condoName || 'Condominium'}
+                          </Typography>
+                          <Chip
+                            label={p.condo?.condoCode || 'Condo'}
+                            size="small"
+                            sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700, bgcolor: 'rgba(26, 26, 46, 0.08)' }}
+                          />
+                        </TableCell>
+
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600} color="#1a1a2e">
+                            {p.user?.fullName || 'Resident'}
+                          </Typography>
+                          <Typography variant="caption" color="#6b7a8f">
+                            Unit: {p.user?.block || 'Block ?'}/Rm {p.user?.roomNo || '?'} ({p.user?.phoneNumber || 'N/A'})
+                          </Typography>
+                        </TableCell>
+
+                        <TableCell>
+                          <Chip
+                            label={(p.paymentType || 'other').toUpperCase()}
+                            size="small"
+                            sx={{ height: 22, fontWeight: 700, bgcolor: p.paymentType === 'equb' ? 'rgba(211, 173, 50, 0.15)' : 'rgba(59, 130, 246, 0.15)', color: p.paymentType === 'equb' ? '#b08822' : '#2563eb' }}
+                          />
+                          <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: '#4b5563' }}>
+                            {p.equb?.name || p.iddir?.name || 'General Community Pool'}
+                          </Typography>
+                        </TableCell>
+
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <BankIcon sx={{ fontSize: 16, color: '#6b7a8f' }} />
+                            <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                              {p.paymentMethod?.replace('_', ' ') || 'Bank Transfer'}
+                            </Typography>
+                          </Box>
+                          {p.transaction?.senderAccNo && (
+                            <Typography variant="caption" color="#9ca3af">
+                              Acc: {p.transaction.senderAccNo}
+                            </Typography>
+                          )}
+                        </TableCell>
+
+                        <TableCell align="right">
+                          <Typography variant="body2" fontWeight={700} color="#1a1a2e">
+                            ETB {Number(p.amount).toLocaleString()}
+                          </Typography>
+                          {Number(p.serviceFee) > 0 && (
+                            <Typography variant="caption" color="#9ca3af">
+                              + Fee: ETB {Number(p.serviceFee).toFixed(2)}
+                            </Typography>
+                          )}
+                        </TableCell>
+
+                        <TableCell>
+                          <Typography variant="body2" color="#4b5563">
+                            {new Date(p.createdAt).toLocaleDateString()}
+                          </Typography>
+                          <Typography variant="caption" color="#9ca3af">
+                            {new Date(p.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </Typography>
+                        </TableCell>
+
+                        <TableCell align="center">
+                          {getStatusChip(p.status)}
+                        </TableCell>
+
+                        <TableCell align="right">
+                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                            <Tooltip title="View Transaction Details">
+                              <IconButton
+                                size="small"
+                                onClick={() => { setSelectedPayment(p); setOpenDetailModal(true); }}
+                                sx={{ color: '#4a6cf7' }}
+                              >
+                                <FaEye size={15} />
+                              </IconButton>
+                            </Tooltip>
+
+                            {isPending && (
+                              <>
+                                <Tooltip title="Approve Payment">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      setSelectedPayment(p);
+                                      setAdminNotes('');
+                                      setOpenApproveModal(true);
+                                    }}
+                                    sx={{ color: '#22c55e' }}
+                                  >
+                                    <FaCheck size={14} />
+                                  </IconButton>
+                                </Tooltip>
+
+                                <Tooltip title="Reject Payment">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      setSelectedPayment(p);
+                                      setRejectReason('');
+                                      setOpenRejectModal(true);
+                                    }}
+                                    sx={{ color: '#ef4444' }}
+                                  >
+                                    <FaTimes size={14} />
+                                  </IconButton>
+                                </Tooltip>
+                              </>
+                            )}
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
+                      <PaymentIcon sx={{ fontSize: 48, color: '#d1d5db', mb: 1 }} />
+                      <Typography variant="h6" color="#6b7a8f">No payments matching your filters</Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </StyledTableContainer>
+
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            component="div"
+            count={totalItems}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+          />
+        </>
+      )}
+
+      {/* Approve Confirmation Dialog */}
+      <Dialog disableRestoreFocus 
+        open={openApproveModal}
+        onClose={() => setOpenApproveModal(false)}
+        maxWidth="xs"
+        fullWidth
+        TransitionComponent={Zoom}
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+            <Avatar sx={{ bgcolor: 'rgba(34, 197, 94, 0.15)', color: '#22c55e' }}>
+              <CheckCircleIcon />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" fontWeight={700}>
+                Approve Payment?
+              </Typography>
+              <Typography variant="caption" color="#6b7a8f">
+                Ref: {selectedPayment?.transaction?.referenceNo || selectedPayment?.id?.slice(0, 8)}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Alert severity="success" sx={{ mb: 2, borderRadius: '10px' }}>
+            Confirming this will mark the payment as <strong>Approved</strong> and automatically credit{' '}
+            <strong>ETB {Number(selectedPayment?.amount || 0).toLocaleString()}</strong> to the member's paid contribution balance.
+          </Alert>
+
+          <TextField
+            label="Admin Notes (Optional)"
+            fullWidth
+            multiline
+            rows={2}
+            value={adminNotes}
+            onChange={(e) => setAdminNotes(e.target.value)}
+            placeholder="Verified against CBE bank statement..."
+            sx={{ mb: 2 }}
+          />
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
+            <Button onClick={() => setOpenApproveModal(false)} disabled={processingAction} sx={{ color: '#6b7a8f' }}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleApprove}
+              disabled={processingAction}
+              sx={{ bgcolor: '#22c55e', '&:hover': { bgcolor: '#16a34a' }, fontWeight: 700 }}
+            >
+              {processingAction ? <CircularProgress size={20} color="inherit" /> : 'Confirm Approval'}
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      {/* Reject Confirmation Dialog */}
+      <Dialog disableRestoreFocus 
+        open={openRejectModal}
+        onClose={() => setOpenRejectModal(false)}
+        maxWidth="xs"
+        fullWidth
+        TransitionComponent={Zoom}
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+            <Avatar sx={{ bgcolor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' }}>
+              <CancelIcon />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" fontWeight={700}>
+                Reject Payment
+              </Typography>
+              <Typography variant="caption" color="#6b7a8f">
+                Ref: {selectedPayment?.transaction?.referenceNo || selectedPayment?.id?.slice(0, 8)}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Alert severity="error" sx={{ mb: 2, borderRadius: '10px' }}>
+            Please provide a clear reason for rejection. The payment will be excluded from the collected pool and will not credit the member.
+          </Alert>
+
+          <TextField
+            label="Rejection Reason *"
+            fullWidth
+            required
+            multiline
+            rows={3}
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="e.g. Bank statement reference does not match deposit..."
+            sx={{ mb: 2 }}
+          />
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
+            <Button onClick={() => setOpenRejectModal(false)} disabled={processingAction} sx={{ color: '#6b7a8f' }}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleReject}
+              disabled={processingAction || !rejectReason.trim()}
+              sx={{ bgcolor: '#ef4444', '&:hover': { bgcolor: '#dc2626' }, fontWeight: 700 }}
+            >
+              {processingAction ? <CircularProgress size={20} color="inherit" /> : 'Confirm Rejection'}
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      {/* Transaction Details Modal */}
+      <Dialog disableRestoreFocus 
+        open={openDetailModal}
+        onClose={() => setOpenDetailModal(false)}
+        maxWidth="sm"
+        fullWidth
+        TransitionComponent={Zoom}
+      >
+        <Box sx={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', p: 3, color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <DialogTitle sx={{ p: 0, fontWeight: 700, fontSize: '1.25rem' }}>
+              Transaction Inspection & Audit
+            </DialogTitle>
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
+              Ref: {selectedPayment?.transaction?.referenceNo || selectedPayment?.id}
+            </Typography>
+          </Box>
+          <IconButton onClick={() => setOpenDetailModal(false)} sx={{ color: '#fff' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <DialogContent sx={{ p: 3, bgcolor: '#f8f9fa' }}>
+          {selectedPayment && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              <Paper sx={{ p: 2, borderRadius: '12px', bgcolor: '#fff' }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">STATUS</Typography>
+                    <Box sx={{ mt: 0.5 }}>{getStatusChip(selectedPayment.status)}</Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">TOTAL AMOUNT</Typography>
+                    <Typography variant="h6" fontWeight={800} color="#1a1a2e" sx={{ mt: 0.5 }}>
+                      ETB {Number(selectedPayment.totalAmount || selectedPayment.amount).toLocaleString()}
+                    </Typography>
                   </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                  <Divider />
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7a8f', mt: 2, mb: 1.5, display: 'block' }}>
-                    Recent Transactions
-                  </Typography>
-                  <TableContainer component={Paper} sx={{ borderRadius: '8px', border: '1px solid #f0f0f0' }}>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell sx={{ fontSize: '0.65rem', fontWeight: 600 }}>Reference</TableCell>
-                          <TableCell sx={{ fontSize: '0.65rem', fontWeight: 600 }}>Purpose</TableCell>
-                          <TableCell align="right" sx={{ fontSize: '0.65rem', fontWeight: 600 }}>Amount</TableCell>
-                          <TableCell sx={{ fontSize: '0.65rem', fontWeight: 600 }}>Status</TableCell>
-                          <TableCell sx={{ fontSize: '0.65rem', fontWeight: 600 }}>Date</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {selectedCondo.recentTransactions.map((txn) => (
-                          <TableRow key={txn.id} hover>
-                            <TableCell sx={{ fontSize: '0.7rem' }}>
-                              <Typography variant="caption" sx={{ fontFamily: 'monospace', color: '#D3AD32' }}>
-                                {txn.reference}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Chip 
-                                label={txn.purpose} 
-                                size="small" 
-                                sx={{ fontSize: '0.6rem', height: 20, backgroundColor: 'rgba(107, 114, 128, 0.08)', color: '#6b7280' }}
-                              />
-                            </TableCell>
-                            <TableCell align="right">
-                              <Typography variant="caption" sx={{ fontWeight: 600, color: '#D3AD32' }}>
-                                {formatCurrency(txn.amount)}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Chip 
-                                label={txn.status} 
-                                size="small" 
-                                sx={{
-                                  fontSize: '0.6rem', 
-                                  height: 20,
-                                  backgroundColor: txn.status === 'completed' ? 'rgba(34, 197, 94, 0.1)' : 
-                                                  txn.status === 'pending' ? 'rgba(245, 158, 11, 0.1)' : 
-                                                  'rgba(220, 38, 38, 0.1)',
-                                  color: txn.status === 'completed' ? '#22c55e' : 
-                                         txn.status === 'pending' ? '#f59e0b' : '#dc2626',
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="caption" sx={{ color: '#6b7a8f' }}>
-                                {new Date(txn.date).toLocaleDateString()}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+              </Paper>
+
+              <Paper sx={{ p: 2, borderRadius: '12px', bgcolor: '#fff' }}>
+                <Typography variant="subtitle2" fontWeight={700} color="#1a1a2e" gutterBottom>
+                  Condominium & Payer Details
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">Condominium</Typography>
+                    <Typography variant="body2" fontWeight={700}>{selectedPayment.condo?.condoName} ({selectedPayment.condo?.condoCode})</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">Full Name</Typography>
+                    <Typography variant="body2" fontWeight={600}>{selectedPayment.user?.fullName}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">Phone Number</Typography>
+                    <Typography variant="body2">{selectedPayment.user?.phoneNumber || 'N/A'}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">Block & Room</Typography>
+                    <Typography variant="body2">Block {selectedPayment.user?.block || '?'}, Room {selectedPayment.user?.roomNo || '?'}</Typography>
+                  </Grid>
                 </Grid>
-              </Grid>
+              </Paper>
+
+              <Paper sx={{ p: 2, borderRadius: '12px', bgcolor: '#fff' }}>
+                <Typography variant="subtitle2" fontWeight={700} color="#1a1a2e" gutterBottom>
+                  Financial & Gateway Metadata
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">Base Amount</Typography>
+                    <Typography variant="body2">ETB {Number(selectedPayment.amount).toLocaleString()}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">Service Fee (0.34%)</Typography>
+                    <Typography variant="body2">ETB {Number(selectedPayment.serviceFee || 0).toFixed(2)}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">Payment Method</Typography>
+                    <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+                      {selectedPayment.paymentMethod?.replace('_', ' ')}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="#6b7a8f">Sender Account / Reference</Typography>
+                    <Typography variant="body2">{selectedPayment.transaction?.senderAccNo || 'Direct Deposit'}</Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+
+              {selectedPayment.adminNotes && (
+                <Paper sx={{ p: 2, borderRadius: '12px', bgcolor: '#fff' }}>
+                  <Typography variant="caption" color="#6b7a8f">ADMINISTRATIVE NOTES / REASON</Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5, color: '#1a1a2e' }}>
+                    {selectedPayment.adminNotes}
+                  </Typography>
+                </Paper>
+              )}
             </Box>
           )}
         </DialogContent>
+
         <DialogActions sx={{ p: 2.5, bgcolor: '#f8f9fa' }}>
-          <Button onClick={() => setOpenDetailModal(false)} sx={{ fontSize: '0.75rem', textTransform: 'none' }}>
+          <Button onClick={() => setOpenDetailModal(false)} variant="contained" sx={{ bgcolor: '#1a1a2e', textTransform: 'none', px: 3 }}>
             Close
           </Button>
         </DialogActions>
@@ -808,4 +877,4 @@ const Payments = () => {
   );
 };
 
-export default Payments;
+export default SuperAdminPayments;

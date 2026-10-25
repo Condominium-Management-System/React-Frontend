@@ -88,6 +88,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = (newUserData) => {
+    setUser(prev => {
+      const merged = { ...prev, ...newUserData };
+      localStorage.setItem('user', JSON.stringify(merged));
+      return merged;
+    });
+  };
+
   const logout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
@@ -107,6 +115,7 @@ export const AuthProvider = ({ children }) => {
     isGuard,
     login,
     logout,
+    updateUser,
     isAuthenticated: !!user,
   };
 

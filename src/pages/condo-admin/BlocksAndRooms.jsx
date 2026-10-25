@@ -767,7 +767,7 @@ const BlocksAndRooms = ({ condoIdProp = null, condoCodeProp = null }) => {
       )}
 
       {/* Block Dialog */}
-      <Dialog open={openBlockModal} onClose={() => setOpenBlockModal(false)} maxWidth="xs" fullWidth>
+      <Dialog disableRestoreFocus  open={openBlockModal} onClose={() => setOpenBlockModal(false)} maxWidth="xs" fullWidth>
         <Box sx={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', p: 3, color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <DialogTitle sx={{ p: 0, fontWeight: 700, fontSize: '1.25rem' }}>
             {editingBlock ? 'Edit Block' : 'Add New Block'}
@@ -812,7 +812,7 @@ const BlocksAndRooms = ({ condoIdProp = null, condoCodeProp = null }) => {
       </Dialog>
 
       {/* Room Dialog */}
-      <Dialog open={openRoomModal} onClose={() => setOpenRoomModal(false)} maxWidth="xs" fullWidth>
+      <Dialog disableRestoreFocus  open={openRoomModal} onClose={() => setOpenRoomModal(false)} maxWidth="xs" fullWidth>
         <Box sx={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', p: 3, color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <DialogTitle sx={{ p: 0, fontWeight: 700, fontSize: '1.25rem' }}>
             {editingRoom ? 'Edit Room' : 'Add New Room'}
@@ -886,7 +886,7 @@ const BlocksAndRooms = ({ condoIdProp = null, condoCodeProp = null }) => {
       </Dialog>
 
       {/* Status & Assign Occupant Dialog */}
-      <Dialog open={openStatusModal} onClose={() => setOpenStatusModal(false)} maxWidth="xs" fullWidth>
+      <Dialog disableRestoreFocus  open={openStatusModal} onClose={() => setOpenStatusModal(false)} maxWidth="xs" fullWidth>
         <Box sx={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', p: 3, color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <DialogTitle sx={{ p: 0, fontWeight: 700, fontSize: '1.25rem' }}>
             Room Status & Occupant

@@ -1,5 +1,6 @@
 // src/pages/condo-admin/Residents.jsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -139,6 +140,7 @@ const DetailCard = styled(Card)(({ theme }) => ({
 
 const Residents = () => {
   const { user: currentUser } = useAuth();
+  const [searchParams] = useSearchParams();
 
   // State
   const [residents, setResidents] = useState([]);
@@ -167,8 +169,10 @@ const Residents = () => {
     try {
       setLoading(true);
       const condoId = currentUser?.condoId;
-      const response = await api.users.getAll(condoId);
-      const data = response.data?.data || [];
+      const response = await api.users.getAll(condoId, { role: 'resident' });
+      const raw = response.data?.data || [];
+      // Exact database definition: count only actual residents
+      const data = raw.filter((u) => u.role === 'resident');
 
       setResidents(data);
       setStats({
@@ -189,6 +193,15 @@ const Residents = () => {
   useEffect(() => {
     fetchResidents();
   }, [fetchResidents]);
+
+  useEffect(() => {
+    const statusParam = searchParams.get('status')?.toLowerCase();
+    const filterParam = searchParams.get('filter')?.toLowerCase();
+    if (statusParam === 'verified') setFilterStatus('VERIFIED');
+    else if (statusParam === 'pending' || statusParam === 'unverified') setFilterStatus('PENDING');
+    else if (filterParam === 'inequb' || filterParam === 'equb') setFilterStatus('IN_EQUB');
+    else if (filterParam === 'iniddir' || filterParam === 'iddir') setFilterStatus('IN_IDDIR');
+  }, [searchParams]);
 
   // Handle delete resident
   const handleDeleteResident = async (resident) => {
@@ -246,7 +259,9 @@ const Residents = () => {
     const matchesStatus =
       filterStatus === 'ALL' ||
       (filterStatus === 'VERIFIED' && resident.isVerified) ||
-      (filterStatus === 'PENDING' && !resident.isVerified);
+      (filterStatus === 'PENDING' && !resident.isVerified) ||
+      (filterStatus === 'IN_EQUB' && resident.isInEqub) ||
+      (filterStatus === 'IN_IDDIR' && resident.isInIddir);
 
     return matchesSearch && matchesStatus;
   });
@@ -337,7 +352,7 @@ const Residents = () => {
       {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={2.4}>
-          <StatsCard color="rgba(107, 114, 128, 0.1)">
+          <StatsCard color="rgba(107, 114, 128, 0.1)" onClick={() => { setFilterStatus('ALL'); setPage(0); }} sx={{ cursor: 'pointer', border: filterStatus === 'ALL' ? '2px solid #6b7280' : '1px solid rgba(0,0,0,0.04)' }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
@@ -352,7 +367,7 @@ const Residents = () => {
           </StatsCard>
         </Grid>
         <Grid item xs={12} sm={6} md={2.4}>
-          <StatsCard color="rgba(34, 197, 94, 0.1)">
+          <StatsCard color="rgba(34, 197, 94, 0.1)" onClick={() => { setFilterStatus('VERIFIED'); setPage(0); }} sx={{ cursor: 'pointer', border: filterStatus === 'VERIFIED' ? '2px solid #22c55e' : '1px solid rgba(0,0,0,0.04)' }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
@@ -369,7 +384,7 @@ const Residents = () => {
           </StatsCard>
         </Grid>
         <Grid item xs={12} sm={6} md={2.4}>
-          <StatsCard color="rgba(245, 158, 11, 0.1)">
+          <StatsCard color="rgba(245, 158, 11, 0.1)" onClick={() => { setFilterStatus('PENDING'); setPage(0); }} sx={{ cursor: 'pointer', border: filterStatus === 'PENDING' ? '2px solid #f59e0b' : '1px solid rgba(0,0,0,0.04)' }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
@@ -386,7 +401,7 @@ const Residents = () => {
           </StatsCard>
         </Grid>
         <Grid item xs={12} sm={6} md={2.4}>
-          <StatsCard color="rgba(59, 130, 246, 0.1)">
+          <StatsCard color="rgba(59, 130, 246, 0.1)" onClick={() => { setFilterStatus('IN_EQUB'); setPage(0); }} sx={{ cursor: 'pointer', border: filterStatus === 'IN_EQUB' ? '2px solid #3b82f6' : '1px solid rgba(0,0,0,0.04)' }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
@@ -403,7 +418,7 @@ const Residents = () => {
           </StatsCard>
         </Grid>
         <Grid item xs={12} sm={6} md={2.4}>
-          <StatsCard color="rgba(139, 92, 246, 0.1)">
+          <StatsCard color="rgba(139, 92, 246, 0.1)" onClick={() => { setFilterStatus('IN_IDDIR'); setPage(0); }} sx={{ cursor: 'pointer', border: filterStatus === 'IN_IDDIR' ? '2px solid #8b5cf6' : '1px solid rgba(0,0,0,0.04)' }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
@@ -646,7 +661,7 @@ const Residents = () => {
       </StyledTableContainer>
 
       {/* Resident Detail Modal */}
-      <Dialog
+      <Dialog disableRestoreFocus 
         open={openDetailModal}
         onClose={() => setOpenDetailModal(false)}
         maxWidth="md"

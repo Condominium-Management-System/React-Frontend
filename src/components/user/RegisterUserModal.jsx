@@ -42,6 +42,7 @@ const RegisterUserModal = ({ isOpen, onClose, onSuccess, initialCondoCode = '', 
   const [condos, setCondos] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [selectedFloor, setSelectedFloor] = useState('');
   const [loadingBlocks, setLoadingBlocks] = useState(false);
   const [loadingRooms, setLoadingRooms] = useState(false);
 
@@ -167,6 +168,7 @@ const RegisterUserModal = ({ isOpen, onClose, onSuccess, initialCondoCode = '', 
       roomId: '',
       roomNo: '',
     }));
+    setSelectedFloor('');
   };
 
   const handleBlockSelect = (e) => {
@@ -179,6 +181,7 @@ const RegisterUserModal = ({ isOpen, onClose, onSuccess, initialCondoCode = '', 
       roomId: '',
       roomNo: '',
     }));
+    setSelectedFloor('');
   };
 
   const handleRoomSelect = (e) => {
@@ -411,58 +414,97 @@ const RegisterUserModal = ({ isOpen, onClose, onSuccess, initialCondoCode = '', 
               </Select>
             </FormControl>
 
-            {/* Block & Room Dynamic Selectors */}
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth disabled={!formData.condoId || loadingBlocks}>
-                  <InputLabel>
-                    {loadingBlocks ? 'Loading blocks...' : 'Select Block (Optional)'}
-                  </InputLabel>
-                  <Select
-                    value={formData.blockId}
-                    label={loadingBlocks ? 'Loading blocks...' : 'Select Block (Optional)'}
-                    onChange={handleBlockSelect}
-                    sx={{ borderRadius: '10px', bgcolor: '#fff' }}
-                  >
-                    <MenuItem value="">
-                      <em>None / Unassigned</em>
-                    </MenuItem>
-                    {blocks.map((b) => (
-                      <MenuItem key={b.id} value={b.id}>
-                        {b.blockNo} ({b.noFloors} floors)
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+            {/* Hierarchy-aware Block, Floor & Room Dynamic Selectors */}
+            {(() => {
+              const selectedBlock = blocks.find((b) => b.id === formData.blockId);
+              const floorOptions = selectedBlock?.noFloors
+                ? Array.from({ length: selectedBlock.noFloors }, (_, i) => i + 1)
+                : [];
+              const availableRooms = rooms.filter(
+                (r) => !selectedFloor || Number(r.floorNo) === Number(selectedFloor)
+              );
 
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth disabled={!formData.blockId || loadingRooms}>
-                  <InputLabel>
-                    {loadingRooms ? 'Loading rooms...' : 'Select Room (Optional)'}
-                  </InputLabel>
-                  <Select
-                    value={formData.roomId}
-                    label={loadingRooms ? 'Loading rooms...' : 'Select Room (Optional)'}
-                    onChange={handleRoomSelect}
-                    sx={{ borderRadius: '10px', bgcolor: '#fff' }}
-                  >
-                    <MenuItem value="">
-                      <em>None / Unassigned</em>
-                    </MenuItem>
-                    {rooms.map((r) => (
-                      <MenuItem key={r.id} value={r.id}>
-                        Unit {r.roomNo} ({r.model}, {r.status})
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
+              return (
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={4}>
+                    <FormControl fullWidth disabled={!formData.condoId || loadingBlocks}>
+                      <InputLabel>
+                        {loadingBlocks ? 'Loading blocks...' : 'Select Block'}
+                      </InputLabel>
+                      <Select
+                        value={formData.blockId}
+                        label={loadingBlocks ? 'Loading blocks...' : 'Select Block'}
+                        onChange={handleBlockSelect}
+                        sx={{ borderRadius: '10px', bgcolor: '#fff' }}
+                      >
+                        <MenuItem value="">
+                          <em>None / Unassigned</em>
+                        </MenuItem>
+                        {blocks.map((b) => (
+                          <MenuItem key={b.id} value={b.id}>
+                            Block {b.blockNo} ({b.noFloors} fl)
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <FormControl fullWidth disabled={!formData.blockId || floorOptions.length === 0}>
+                      <InputLabel>Floor</InputLabel>
+                      <Select
+                        value={selectedFloor}
+                        label="Floor"
+                        onChange={(e) => {
+                          setSelectedFloor(e.target.value);
+                          setFormData((prev) => ({ ...prev, roomId: '', roomNo: '' }));
+                        }}
+                        sx={{ borderRadius: '10px', bgcolor: '#fff' }}
+                      >
+                        <MenuItem value="">
+                          <em>All Floors</em>
+                        </MenuItem>
+                        {floorOptions.map((f) => (
+                          <MenuItem key={f} value={f}>
+                            Floor {f}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <FormControl fullWidth disabled={!formData.blockId || loadingRooms}>
+                      <InputLabel>
+                        {loadingRooms ? 'Loading rooms...' : 'Select Room'}
+                      </InputLabel>
+                      <Select
+                        value={formData.roomId}
+                        label={loadingRooms ? 'Loading rooms...' : 'Select Room'}
+                        onChange={handleRoomSelect}
+                        sx={{ borderRadius: '10px', bgcolor: '#fff' }}
+                      >
+                        <MenuItem value="">
+                          <em>None / Unassigned</em>
+                        </MenuItem>
+                        {availableRooms.map((r) => {
+                          const isOccupied = r.status === 'occupied';
+                          return (
+                            <MenuItem key={r.id} value={r.id} disabled={isOccupied}>
+                              Unit {r.roomNo} (Fl {r.floorNo}, {isOccupied ? 'Occupied' : 'Free'})
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              );
+            })()}
 
             {formData.roomNo && (
               <Alert severity="info" sx={{ py: 0.5, borderRadius: '8px' }}>
-                Selected Assignment: <strong>Block {formData.block}</strong>, <strong>Room {formData.roomNo}</strong>
+                Selected Assignment: <strong>Block {formData.block}</strong>, <strong>Room {formData.roomNo}</strong> {selectedFloor ? `(Floor ${selectedFloor})` : ''}
               </Alert>
             )}
           </Box>

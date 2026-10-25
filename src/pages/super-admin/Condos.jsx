@@ -74,7 +74,7 @@ const StyledTableContainer = styled(TableContainer)(() => ({
   },
 }));
 
-const StatsCard = styled(Card)(({ active }) => ({
+const StatsCard = styled(Card, { shouldForwardProp: (prop) => prop !== 'active' && prop !== 'color' })(({ active }) => ({
   borderRadius: '12px',
   boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
   border: '1px solid rgba(0,0,0,0.04)',
@@ -620,7 +620,7 @@ const Condos = () => {
       </StyledTableContainer>
 
       {/* Create / Edit Dialog */}
-      <Dialog
+      <Dialog disableRestoreFocus 
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         maxWidth="sm"
@@ -710,7 +710,7 @@ const Condos = () => {
       </Dialog>
 
       {/* Condo Details Dialog */}
-      <Dialog
+      <Dialog disableRestoreFocus 
         open={Boolean(viewingCondo)}
         onClose={() => setViewingCondo(null)}
         maxWidth="sm"

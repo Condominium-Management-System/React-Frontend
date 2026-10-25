@@ -78,7 +78,7 @@ const StyledTableContainer = styled(TableContainer)(() => ({
   },
 }));
 
-const StatsCard = styled(Card)(({ color, active }) => ({
+const StatsCard = styled(Card, { shouldForwardProp: (prop) => prop !== 'active' && prop !== 'color' })(({ color, active }) => ({
   borderRadius: '16px',
   boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
   border: `1px solid ${active ? color : 'rgba(0,0,0,0.04)'}`,
@@ -156,6 +156,7 @@ const Rooms = () => {
   const isSuperAdmin = user?.role === 'super_admin';
   const urlCondoId = searchParams.get('condoId') || '';
   const urlBlockId = searchParams.get('blockId') || '';
+  const urlStatus = searchParams.get('status') || 'ALL';
 
   // Main Data States
   const [rooms, setRooms] = useState([]);
@@ -167,9 +168,16 @@ const Rooms = () => {
   // Filters
   const [selectedCondoId, setSelectedCondoId] = useState(isSuperAdmin ? urlCondoId : (user?.condoId || ''));
   const [selectedBlockId, setSelectedBlockId] = useState(urlBlockId || '');
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState(urlStatus);
   const [modelFilter, setModelFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const currentStatus = searchParams.get('status');
+    if (currentStatus) {
+      setStatusFilter(currentStatus);
+    }
+  }, [searchParams]);
 
   // Pagination
   const [page, setPage] = useState(0);
@@ -825,7 +833,7 @@ const Rooms = () => {
       </Menu>
 
       {/* Create / Edit Dialog */}
-      <Dialog
+      <Dialog disableRestoreFocus 
         open={openDialog}
         onClose={() => !submitting && setOpenDialog(false)}
         maxWidth="sm"
@@ -1015,7 +1023,7 @@ const Rooms = () => {
       </Dialog>
 
       {/* Room Details Dialog */}
-      <Dialog
+      <Dialog disableRestoreFocus 
         open={Boolean(viewingRoom)}
         onClose={() => setViewingRoom(null)}
         maxWidth="sm"

@@ -1,6 +1,8 @@
 // src/pages/super-admin/Promotions.jsx
 import React, { useState, useEffect } from 'react';
 import {
+  Checkbox,
+  ListItemText,
   Box,
   Typography,
   Grid,
@@ -54,6 +56,8 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { toast } from 'react-toastify';
+import { promotionService } from '../../services/promotionService';
+import { api } from '../../api/axiosConfig';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaRegEdit, FaRegTrashAlt, FaEye, FaCheck, FaTimes } from 'react-icons/fa';
 import { MdOutlinePending, MdApproval } from 'react-icons/md';
@@ -138,110 +142,6 @@ const StatusChip = styled(Chip)(({ theme, status }) => ({
   }),
 }));
 
-// Mock Data
-const MOCK_PROMOTIONS = [
-  {
-    id: '1',
-    title: 'Amazing Phone Deal',
-    description: 'Get 30% off on all smartphones this week! Limited time offer.',
-    type: 'shop',
-    category: 'electronics',
-    price: 500,
-    businessName: 'Tech Store Ethiopia',
-    contactNumber: '0912345678',
-    email: 'info@techstore.com',
-    websiteUrl: 'https://techstore.com',
-    imageUrl: null,
-    status: 'active',
-    views: 150,
-    clicks: 45,
-    expiresAt: '2026-12-31T00:00:00.000Z',
-    createdAt: '2026-08-20T10:00:00.000Z',
-    postedBy: { fullName: 'Super Admin' },
-    condo: { condoName: 'All Condos', condoCode: 'GLOBAL' },
-  },
-  {
-    id: '2',
-    title: 'New Furniture Collection',
-    description: 'Modern furniture for your home. 20% discount for condo residents.',
-    type: 'shop',
-    category: 'furniture',
-    price: 300,
-    businessName: 'Furniture Hub',
-    contactNumber: '0923456789',
-    email: 'info@furniturehub.com',
-    websiteUrl: null,
-    imageUrl: null,
-    status: 'pending',
-    views: 0,
-    clicks: 0,
-    expiresAt: '2026-12-31T00:00:00.000Z',
-    createdAt: '2026-08-21T14:00:00.000Z',
-    postedBy: { fullName: 'Admin User' },
-    condo: { condoName: 'Ye Kondominium 01', condoCode: 'YEKONDO-001' },
-  },
-  {
-    id: '3',
-    title: 'Kitchen Appliances Sale',
-    description: 'Get the best kitchen appliances at unbeatable prices.',
-    type: 'product',
-    category: 'appliances',
-    price: 1000,
-    businessName: 'Appliance World',
-    contactNumber: '0934567890',
-    email: 'info@applianceworld.com',
-    websiteUrl: 'https://applianceworld.com',
-    imageUrl: null,
-    status: 'approved',
-    views: 80,
-    clicks: 20,
-    expiresAt: '2026-11-30T00:00:00.000Z',
-    createdAt: '2026-08-19T09:00:00.000Z',
-    postedBy: { fullName: 'Super Admin' },
-    condo: { condoName: 'Sunrise Condominium', condoCode: 'SUNRISE-001' },
-  },
-  {
-    id: '4',
-    title: 'Laptop Discount',
-    description: 'Special discount on all laptops for condo residents.',
-    type: 'technical',
-    category: 'electronics',
-    price: 200,
-    businessName: 'PC World',
-    contactNumber: '0945678901',
-    email: 'info@pcworld.com',
-    websiteUrl: null,
-    imageUrl: null,
-    status: 'rejected',
-    views: 0,
-    clicks: 0,
-    expiresAt: '2026-10-15T00:00:00.000Z',
-    createdAt: '2026-08-18T16:00:00.000Z',
-    postedBy: { fullName: 'Admin User' },
-    condo: { condoName: 'Green Valley Towers', condoCode: 'GV-002' },
-  },
-  {
-    id: '5',
-    title: 'Home Cleaning Service',
-    description: 'Professional home cleaning services at special rates.',
-    type: 'service',
-    category: 'services',
-    price: 150,
-    businessName: 'Clean Home',
-    contactNumber: '0956789012',
-    email: 'info@cleanhome.com',
-    websiteUrl: 'https://cleanhome.com',
-    imageUrl: null,
-    status: 'expired',
-    views: 200,
-    clicks: 60,
-    expiresAt: '2026-08-01T00:00:00.000Z',
-    createdAt: '2026-07-15T11:00:00.000Z',
-    postedBy: { fullName: 'Super Admin' },
-    condo: { condoName: 'All Condos', condoCode: 'GLOBAL' },
-  },
-];
-
 const Promotions = () => {
   const theme = useTheme();
   
@@ -253,6 +153,22 @@ const Promotions = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
+  const [condos, setCondos] = useState([]);
+  const [condosLoading, setCondosLoading] = useState(false);
+  const [condoFilter, setCondoFilter] = useState('ALL');
+  
+  const fetchCondos = async () => {
+    try {
+      setCondosLoading(true);
+      const res = await api.condos.getAll();
+      setCondos(res.data?.data || []);
+    } catch (err) {
+      console.error('Error fetching condos for promotions:', err);
+    } finally {
+      setCondosLoading(false);
+    }
+  };
+  
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -281,6 +197,7 @@ const Promotions = () => {
     websiteUrl: '',
     expiresAt: '',
     image: null,
+    targetCondos: ['ALL'],
   });
   const [reviewData, setReviewData] = useState({ 
     status: 'approved', 
@@ -290,32 +207,26 @@ const Promotions = () => {
   const fetchPromotions = async () => {
     try {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setPromotions(MOCK_PROMOTIONS);
-      setTotalItems(MOCK_PROMOTIONS.length);
-      
-      const statsData = {
-        total: MOCK_PROMOTIONS.length,
-        pending: MOCK_PROMOTIONS.filter(p => p.status === 'pending').length,
-        approved: MOCK_PROMOTIONS.filter(p => p.status === 'approved').length,
-        active: MOCK_PROMOTIONS.filter(p => p.status === 'active').length,
-        expired: MOCK_PROMOTIONS.filter(p => p.status === 'expired').length,
-        rejected: MOCK_PROMOTIONS.filter(p => p.status === 'rejected').length,
-        cancelled: MOCK_PROMOTIONS.filter(p => p.status === 'cancelled').length,
-        totalRevenue: MOCK_PROMOTIONS.reduce((sum, p) => sum + (p.price || 0), 0),
-      };
+      const params = { status: 'all', limit: 100 };
+      if (condoFilter && condoFilter !== 'ALL' && condoFilter !== 'GLOBAL') {
+        params.condoId = condoFilter;
+      }
+      const data = await promotionService.getAll(params);
+      const items = data?.items || data || [];
+      setPromotions(items);
+      setTotalItems(items.length);
+      const statsData = await promotionService.getStats(items);
       setStats(statsData);
-      
-      
     } catch (error) {
-      toast.error('Failed to fetch promotions');
+      console.error('Error fetching promotions:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch promotions');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchPromotions(); }, []);
+  useEffect(() => { fetchCondos(); }, []);
+  useEffect(() => { fetchPromotions(); }, [condoFilter]);
 
   const filteredPromotions = promotions.filter(promo => {
     const matchesSearch = 
@@ -324,7 +235,10 @@ const Promotions = () => {
       promo.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === '' || promo.type === typeFilter;
     const matchesStatus = statusFilter === '' || promo.status === statusFilter;
-    return matchesSearch && matchesType && matchesStatus;
+    const matchesCondo = condoFilter === 'ALL' ||
+      (condoFilter === 'GLOBAL' && !promo.condoId) ||
+      promo.condoId === condoFilter;
+    return matchesSearch && matchesType && matchesStatus && matchesCondo;
   });
 
   const paginatedPromotions = filteredPromotions.slice(
@@ -334,68 +248,76 @@ const Promotions = () => {
 
   const handleSubmit = async () => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newPromotion = {
-        id: Date.now().toString(),
+      if (!formData.title || !formData.price || !formData.expiresAt) {
+        toast.error('Title, price and expiry date are required');
+        return;
+      }
+      if (!formData.targetCondos || formData.targetCondos.length === 0) {
+        toast.error('Please select at least one condominium or All Condominiums');
+        return;
+      }
+      const isGlobal = formData.targetCondos.includes('ALL');
+      const payload = {
         title: formData.title,
         description: formData.description,
         type: formData.type,
-        category: formData.category,
+        category: formData.category || 'other',
         price: parseFloat(formData.price),
-        businessName: formData.businessName,
-        contactNumber: formData.contactNumber,
-        email: formData.email || null,
-        websiteUrl: formData.websiteUrl || null,
-        imageUrl: null,
-        status: 'pending',
-        views: 0,
-        clicks: 0,
-        expiresAt: new Date(formData.expiresAt).toISOString(),
-        createdAt: new Date().toISOString(),
-        postedBy: { fullName: 'Super Admin' },
-        condo: { condoName: 'All Condos', condoCode: 'GLOBAL' },
+        businessName: formData.businessName || 'Business',
+        contactNumber: formData.contactNumber || '0900000000',
+        email: formData.email || undefined,
+        websiteUrl: formData.websiteUrl || undefined,
+        expiresAt: formData.expiresAt?.includes('T') ? formData.expiresAt : new Date(formData.expiresAt + 'T23:59:59').toISOString(),
+        condoIds: isGlobal ? ['ALL'] : formData.targetCondos,
+        condoId: isGlobal ? null : formData.targetCondos[0],
       };
-      
       if (editingPromotion) {
-        const updated = promotions.map(p => p.id === editingPromotion.id ? { ...p, ...newPromotion } : p);
-        setPromotions(updated);
-        toast.success('Promotion updated!');
+        await promotionService.update(editingPromotion.id, payload);
+        toast.success('Promotion updated successfully!');
       } else {
-        setPromotions([newPromotion, ...promotions]);
-        toast.success('Promotion created!');
+        await promotionService.create(payload);
+        toast.success(
+          isGlobal 
+            ? 'Global promotion created successfully (visible across all condominiums)!'
+            : `Promotion created for ${formData.targetCondos.length} condominium(s)!`
+        );
       }
       setOpenModal(false);
       resetForm();
-      fetchPromotions();
+      await fetchPromotions();
     } catch (error) {
-      toast.error('Failed to save promotion');
+      console.error('Error saving promotion:', error);
+      const errorDetails = error.response?.data?.errors?.map(e => e.message).join(' | ');
+      toast.error(errorDetails || error.response?.data?.message || 'Failed to save promotion');
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this promotion?')) return;
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setPromotions(promotions.filter(p => p.id !== id));
-      toast.success('Promotion deleted!');
-      fetchPromotions();
-    } catch (error) { toast.error('Failed to delete'); }
+      await promotionService.delete(id);
+      toast.success('Promotion deleted successfully!');
+      await fetchPromotions();
+    } catch (error) {
+      console.error('Error deleting promotion:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete promotion');
+    }
   };
 
   const handleReview = async () => {
+    if (!selectedPromotion) return;
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const updated = promotions.map(p => 
-        p.id === selectedPromotion.id 
-          ? { ...p, status: reviewData.status, rejectionReason: reviewData.rejectionReason || null }
-          : p
-      );
-      setPromotions(updated);
-      toast.success(`Promotion ${reviewData.status === 'approved' ? 'approved' : 'rejected'}!`);
+      await promotionService.review(selectedPromotion.id, {
+        status: reviewData.status,
+        rejectionReason: reviewData.rejectionReason || undefined
+      });
+      toast.success(`Promotion ${reviewData.status === 'approved' ? 'approved' : 'rejected'} successfully!`);
       setOpenReviewModal(false);
-      fetchPromotions();
-    } catch (error) { toast.error('Failed to review'); }
+      await fetchPromotions();
+    } catch (error) {
+      console.error('Error reviewing promotion:', error);
+      toast.error(error.response?.data?.message || 'Failed to review promotion');
+    }
   };
 
   const resetForm = () => {
@@ -412,6 +334,7 @@ const Promotions = () => {
       websiteUrl: '',
       expiresAt: '',
       image: null,
+      targetCondos: ['ALL'],
     });
   };
 
@@ -453,7 +376,7 @@ const Promotions = () => {
         <Grid item xs={6} sm={4} md={2.4}>
           <StatsCard color="rgba(211, 173, 50, 0.1)">
             <CardContent sx={{ p: 2 }}>
-              <Box><Typography variant="caption" sx={{ color: '#6b7a8f' }}>Revenue</Typography>
+              <Box><Typography variant="caption" sx={{ color: '#6b7a8f' }}>Total Value</Typography>
               <Typography variant="h6" sx={{ fontWeight: 700, color: '#D3AD32' }}>{formatCurrency(stats.totalRevenue)}</Typography></Box>
               <Box className="stat-icon"><MoneyIcon sx={{ color: '#D3AD32', fontSize: 20 }} /></Box>
             </CardContent>
@@ -490,25 +413,41 @@ const Promotions = () => {
 
       {/* Filters */}
       <Paper sx={{ mb: 3, p: 2, borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <TextField fullWidth placeholder="Search promotions..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <TextField fullWidth sx={{ flex: 1, minWidth: 200 }} placeholder="Search promotions..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#6b7a8f' }} /></InputAdornment>, sx: { borderRadius: '10px' } }} size="small" />
-          <FormControl size="small" sx={{ minWidth: 130 }}>
+          <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel>Type</InputLabel>
             <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} label="Type" sx={{ borderRadius: '10px' }}>
               <MenuItem value="">All Types</MenuItem>
-              <MenuItem value="shop">Shop</MenuItem><MenuItem value="technical">Technical</MenuItem>
-              <MenuItem value="service">Service</MenuItem><MenuItem value="product">Product</MenuItem>
-              <MenuItem value="event">Event</MenuItem><MenuItem value="other">Other</MenuItem>
+              <MenuItem value="shop">Shop</MenuItem>
+              <MenuItem value="technical">Technical</MenuItem>
+              <MenuItem value="service">Service</MenuItem>
+              <MenuItem value="product">Product</MenuItem>
+              <MenuItem value="event">Event</MenuItem>
+              <MenuItem value="other">Other</MenuItem>
             </Select>
           </FormControl>
-          <FormControl size="small" sx={{ minWidth: 130 }}>
+          <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel>Status</InputLabel>
             <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} label="Status" sx={{ borderRadius: '10px' }}>
               <MenuItem value="">All Status</MenuItem>
-              <MenuItem value="pending">Pending</MenuItem><MenuItem value="approved">Approved</MenuItem>
-              <MenuItem value="active">Active</MenuItem><MenuItem value="expired">Expired</MenuItem>
-              <MenuItem value="rejected">Rejected</MenuItem><MenuItem value="cancelled">Cancelled</MenuItem>
+              <MenuItem value="pending">Pending</MenuItem>
+              <MenuItem value="approved">Approved</MenuItem>
+              <MenuItem value="active">Active</MenuItem>
+              <MenuItem value="expired">Expired</MenuItem>
+              <MenuItem value="rejected">Rejected</MenuItem>
+              <MenuItem value="cancelled">Cancelled</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel>Filter by Condominium</InputLabel>
+            <Select value={condoFilter} onChange={(e) => setCondoFilter(e.target.value)} label="Filter by Condominium" sx={{ borderRadius: '10px' }}>
+              <MenuItem value="ALL">All Condominiums</MenuItem>
+              <MenuItem value="GLOBAL">Global (All Condominiums)</MenuItem>
+              {condos.map(c => (
+                <MenuItem key={c.id} value={c.id}>{c.condoName} ({c.condoCode})</MenuItem>
+              ))}
             </Select>
           </FormControl>
           <Button variant="contained" startIcon={<RefreshIcon />} onClick={fetchPromotions}
@@ -523,7 +462,9 @@ const Promotions = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Promotion</TableCell><TableCell>Business</TableCell><TableCell>Type</TableCell>
+              <TableCell>Promotion</TableCell><TableCell>Condominium</TableCell>
+                <TableCell>Business</TableCell>
+                <TableCell>Type</TableCell>
               <TableCell>Price</TableCell><TableCell>Status</TableCell><TableCell>Views/Clicks</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -540,6 +481,21 @@ const Promotions = () => {
                     <Typography variant="caption" sx={{ color: '#6b7a8f' }}>{promo.description?.substring(0, 40)}...</Typography></Box>
                   </Box>
                 </TableCell>
+                <TableCell>
+                  {promo.condo ? (
+                    <Chip 
+                      size="small" 
+                      label={`${promo.condo.condoName} (${promo.condo.condoCode})`} 
+                      sx={{ bgcolor: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', fontWeight: 500 }} 
+                    />
+                  ) : (
+                    <Chip 
+                      size="small" 
+                      label="All Condos (Global)" 
+                      sx={{ bgcolor: 'rgba(211, 173, 50, 0.15)', color: '#D3AD32', fontWeight: 600 }} 
+                    />
+                  )}
+                </TableCell>
                 <TableCell><Box><Typography variant="body2">{promo.businessName}</Typography>
                 <Typography variant="caption" sx={{ color: '#6b7a8f' }}>{promo.contactNumber}</Typography></Box></TableCell>
                 <TableCell><Chip label={promo.type} size="small" sx={{ backgroundColor: 'rgba(107, 114, 128, 0.08)', color: '#6b7280', textTransform: 'capitalize' }} /></TableCell>
@@ -553,7 +509,7 @@ const Promotions = () => {
                       <Tooltip title="Review"><IconButton size="small" onClick={() => { setSelectedPromotion(promo); setReviewData({ status: 'approved', rejectionReason: '' }); setOpenReviewModal(true); }}
                         sx={{ color: '#f59e0b', '&:hover': { transform: 'scale(1.1)' } }}><MdApproval size={18} /></IconButton></Tooltip>)}
                     <Tooltip title="View"><IconButton size="small" onClick={() => { setSelectedPromotion(promo); setOpenDetailModal(true); }} sx={{ color: '#6b7a8f' }}><FaEye size={16} /></IconButton></Tooltip>
-                    <Tooltip title="Edit"><IconButton size="small" onClick={() => { setEditingPromotion(promo); setFormData({ title: promo.title, description: promo.description, type: promo.type, category: promo.category || '', price: promo.price, businessName: promo.businessName, contactNumber: promo.contactNumber, email: promo.email || '', websiteUrl: promo.websiteUrl || '', expiresAt: promo.expiresAt?.split('T')[0] || '', image: null }); setOpenModal(true); }} sx={{ color: '#6b7a8f' }}><FaRegEdit size={16} /></IconButton></Tooltip>
+                    <Tooltip title="Edit"><IconButton size="small" onClick={() => { setEditingPromotion(promo); setFormData({ title: promo.title, description: promo.description, type: promo.type, category: promo.category || '', price: promo.price, businessName: promo.businessName, contactNumber: promo.contactNumber, email: promo.email || '', websiteUrl: promo.websiteUrl || '', expiresAt: promo.expiresAt?.split('T')[0] || '', image: null, targetCondos: promo.condoId ? [promo.condoId] : ['ALL'] }); setOpenModal(true); }} sx={{ color: '#6b7a8f' }}><FaRegEdit size={16} /></IconButton></Tooltip>
                     <Tooltip title="Delete"><IconButton size="small" onClick={() => handleDelete(promo.id)} sx={{ color: '#6b7a8f' }}><FaRegTrashAlt size={16} /></IconButton></Tooltip>
                   </Box>
                 </TableCell>
@@ -565,7 +521,7 @@ const Promotions = () => {
       </StyledTableContainer>
 
       {/* Create/Edit Modal */}
-      <Dialog open={openModal} onClose={() => setOpenModal(false)} maxWidth="md" fullWidth TransitionComponent={Zoom} PaperProps={{ sx: { borderRadius: '20px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', overflow: 'hidden' } }}>
+      <Dialog disableRestoreFocus  open={openModal} onClose={() => setOpenModal(false)} maxWidth="md" fullWidth TransitionComponent={Zoom} PaperProps={{ sx: { borderRadius: '20px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', overflow: 'hidden' } }}>
         <Box sx={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', p: 3, color: '#fff' }}>
           <DialogTitle sx={{ p: 0, fontWeight: 700 }}>{editingPromotion ? '✏️ Edit Promotion' : '📢 Create Promotion'}</DialogTitle>
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>{editingPromotion ? 'Update promotion details' : 'Add a new promotion campaign'}</Typography>
@@ -586,10 +542,64 @@ const Promotions = () => {
               <Grid item xs={6}><TextField label="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px', backgroundColor: '#fff' } }} /></Grid>
               <Grid item xs={6}><TextField label="Website URL" value={formData.websiteUrl} onChange={(e) => setFormData({...formData, websiteUrl: e.target.value})} fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px', backgroundColor: '#fff' } }} /></Grid>
               <Grid item xs={12}>
-                <Box sx={{ border: '2px dashed #d1d5db', borderRadius: '10px', p: 2, textAlign: 'center', cursor: 'pointer', bgcolor: '#fff' }}>
-                  <UploadIcon sx={{ fontSize: 30, color: '#6b7a8f', mb: 1 }} />
-                  <Typography variant="body2" color="#6b7a8f">Click to upload promotion image</Typography>
-                </Box>
+                <FormControl fullWidth required>
+                  <InputLabel id="promo-target-condo-label">Target Condominium(s) *</InputLabel>
+                  <Select
+                    labelId="promo-target-condo-label"
+                    multiple
+                    value={formData.targetCondos || ['ALL']}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val.includes('ALL') && !formData.targetCondos.includes('ALL')) {
+                        setFormData({ ...formData, targetCondos: ['ALL'] });
+                      } else if (formData.targetCondos.includes('ALL')) {
+                        const withoutAll = val.filter(v => v !== 'ALL');
+                        setFormData({ ...formData, targetCondos: withoutAll.length > 0 ? withoutAll : ['ALL'] });
+                      } else {
+                        setFormData({ ...formData, targetCondos: typeof val === 'string' ? val.split(',') : val });
+                      }
+                    }}
+                    renderValue={(selected) => {
+                      if (selected.includes('ALL')) {
+                        return <Chip size="small" label="All Condominiums (Global Promotion)" sx={{ bgcolor: 'rgba(59, 130, 246, 0.15)', color: '#2563eb', fontWeight: 600 }} />;
+                      }
+                      if (selected.length === 0) {
+                        return <em>Select Condominium(s)</em>;
+                      }
+                      return (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {selected.map((cId) => {
+                            const c = condos.find(item => item.id === cId);
+                            return (
+                              <Chip
+                                key={cId}
+                                size="small"
+                                label={c ? `${c.condoName} (${c.condoCode})` : cId}
+                                sx={{ bgcolor: 'rgba(26, 26, 46, 0.08)', fontWeight: 500 }}
+                              />
+                            );
+                          })}
+                        </Box>
+                      );
+                    }}
+                    label="Target Condominium(s) *"
+                    sx={{ borderRadius: '10px', bgcolor: '#fff' }}
+                  >
+                    <MenuItem value="ALL">
+                      <Checkbox checked={formData.targetCondos.includes('ALL')} />
+                      <ListItemText primary="All Condominiums (Global Promotion)" secondary="Display across all condominiums" />
+                    </MenuItem>
+                    {condos.map(c => (
+                      <MenuItem key={c.id} value={c.id}>
+                        <Checkbox checked={formData.targetCondos.includes('ALL') || formData.targetCondos.includes(c.id)} />
+                        <ListItemText primary={`${c.condoName} (${c.condoCode})`} secondary={c.city || ''} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <Typography variant="caption" sx={{ color: '#6b7a8f', mt: 0.5, display: 'block' }}>
+                    Choose "All Condominiums" for a global campaign, or select specific condominiums.
+                  </Typography>
+                </FormControl>
               </Grid>
             </Grid>
           </Box>
@@ -601,24 +611,24 @@ const Promotions = () => {
       </Dialog>
 
       {/* Detail Modal */}
-      <Dialog open={openDetailModal} onClose={() => setOpenDetailModal(false)} maxWidth="md" fullWidth TransitionComponent={Zoom}>
+      <Dialog disableRestoreFocus  open={openDetailModal} onClose={() => setOpenDetailModal(false)} maxWidth="md" fullWidth TransitionComponent={Zoom}>
         <Box sx={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', p: 3, color: '#fff' }}>
           <DialogTitle sx={{ p: 0, fontWeight: 700 }}>Promotion Details</DialogTitle>
         </Box>
         <DialogContent sx={{ p: 4, bgcolor: '#f8f9fa' }}>
           {selectedPromotion && (
             <Grid container spacing={2}>
-              <Grid item xs={12}><Typography variant="h6" sx={{ fontWeight: 600 }}>{selectedPromotion.title}</Typography></Grid>
-              <Grid item xs={12}><Typography variant="body2" sx={{ color: '#6b7a8f' }}>Description</Typography><Paper sx={{ p: 2, bgcolor: '#f8f9fa', borderRadius: '8px' }}><Typography variant="body2">{selectedPromotion.description}</Typography></Paper></Grid>
+              <Grid item xs={12}><Typography variant="h6" sx={{ fontWeight: 600, wordBreak: "break-word", overflowWrap: "anywhere" }}>{selectedPromotion.title}</Typography></Grid>
+              <Grid item xs={12}><Typography variant="body2" sx={{ color: '#6b7a8f' }}>Description</Typography><Paper sx={{ p: 2, bgcolor: '#f8f9fa', borderRadius: '8px' }}><Typography variant="body2" sx={{ wordBreak: "break-word", overflowWrap: "anywhere", whiteSpace: "pre-line" }}>{selectedPromotion.description}</Typography></Paper></Grid>
               <Grid item xs={6}><Typography variant="caption" sx={{ color: '#6b7a8f' }}>Type</Typography><Chip label={selectedPromotion.type} size="small" sx={{ textTransform: 'capitalize' }} /></Grid>
               <Grid item xs={6}><Typography variant="caption" sx={{ color: '#6b7a8f' }}>Status</Typography><StatusChip status={selectedPromotion.status} label={selectedPromotion.status} size="small" /></Grid>
               <Grid item xs={6}><Typography variant="caption" sx={{ color: '#6b7a8f' }}>Price</Typography><Typography variant="body2" sx={{ fontWeight: 600, color: '#D3AD32' }}>{formatCurrency(selectedPromotion.price)}</Typography></Grid>
               <Grid item xs={6}><Typography variant="caption" sx={{ color: '#6b7a8f' }}>Expires</Typography><Typography variant="body2">{new Date(selectedPromotion.expiresAt).toLocaleDateString()}</Typography></Grid>
               <Grid item xs={12}><Typography variant="caption" sx={{ color: '#6b7a8f' }}>Business Information</Typography><Paper sx={{ p: 2, bgcolor: '#fff', borderRadius: '8px', mt: 1 }}>
-                <Typography variant="body2" fontWeight={500}>{selectedPromotion.businessName}</Typography>
+                <Typography variant="body2" fontWeight={500} sx={{ wordBreak: "break-word", overflowWrap: "anywhere" }}>{selectedPromotion.businessName}</Typography>
                 <Typography variant="body2" sx={{ color: '#6b7a8f' }}>{selectedPromotion.contactNumber}</Typography>
                 {selectedPromotion.email && <Typography variant="body2" sx={{ color: '#6b7a8f' }}>{selectedPromotion.email}</Typography>}
-                {selectedPromotion.websiteUrl && <Typography variant="body2" sx={{ color: '#3b82f6' }}>{selectedPromotion.websiteUrl}</Typography>}
+                {selectedPromotion.websiteUrl && <Typography variant="body2" sx={{ color: '#3b82f6', wordBreak: "break-all", overflowWrap: "anywhere" }}>{selectedPromotion.websiteUrl}</Typography>}
               </Paper></Grid>
               <Grid item xs={6}><Typography variant="caption" sx={{ color: '#6b7a8f' }}>Views</Typography><Typography variant="body2">{selectedPromotion.views || 0}</Typography></Grid>
               <Grid item xs={6}><Typography variant="caption" sx={{ color: '#6b7a8f' }}>Clicks</Typography><Typography variant="body2">{selectedPromotion.clicks || 0}</Typography></Grid>
@@ -629,7 +639,7 @@ const Promotions = () => {
       </Dialog>
 
       {/* Review Modal */}
-      <Dialog open={openReviewModal} onClose={() => setOpenReviewModal(false)} maxWidth="sm" fullWidth TransitionComponent={Zoom}>
+      <Dialog disableRestoreFocus  open={openReviewModal} onClose={() => setOpenReviewModal(false)} maxWidth="sm" fullWidth TransitionComponent={Zoom}>
         <DialogTitle sx={{ fontWeight: 700 }}>Review Promotion</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
