@@ -1,5 +1,5 @@
 // src/pages/resident/Promotions.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api/axiosConfig';
 import { toast } from 'react-toastify';
@@ -13,7 +13,7 @@ const ResidentPromotions = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPromo, setSelectedPromo] = useState(null);
 
-  const fetchPromotions = async () => {
+  const fetchPromotions = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.promotions.getAll({ status: 'active', limit: 100 });
@@ -31,11 +31,11 @@ const ResidentPromotions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [urlPromoId]);
 
   useEffect(() => {
     fetchPromotions();
-  }, [urlPromoId]);
+  }, [fetchPromotions]);
 
   const handleCopyCode = async (code, promoId) => {
     try {
