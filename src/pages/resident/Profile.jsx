@@ -1,5 +1,5 @@
 // src/pages/resident/Profile.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/axiosConfig';
@@ -46,7 +46,7 @@ const ResidentProfile = () => {
   });
 
   // Fetch Authoritative Profile & Accounts
-  const loadProfileAndAccounts = async () => {
+  const loadProfileAndAccounts = useCallback(async () => {
     try {
       setLoading(true);
       const [fullProfileRes, accountsRes] = await Promise.allSettled([
@@ -78,11 +78,11 @@ const ResidentProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadProfileAndAccounts();
-  }, []);
+  }, [loadProfileAndAccounts]);
 
   const toggleTheme = () => {
     const nextTheme = !isDarkMode;
@@ -273,6 +273,14 @@ const ResidentProfile = () => {
     if (str.length <= 4) return `•••• ${str}`;
     return `${str.slice(0, 2)}••••${str.slice(-4)}`;
   };
+
+  if (loading && !profileData) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D3AD32]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -549,7 +557,6 @@ const ResidentProfile = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {accounts.map((acc) => {
-                  const isCbe = (acc.paymentMethod || '').toLowerCase() === 'cbe';
                   const isTelebirr = (acc.paymentMethod || '').toLowerCase() === 'telebirr';
 
                   return (
