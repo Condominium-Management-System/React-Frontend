@@ -43,7 +43,6 @@ import {
   Close as CloseIcon,
   Schedule as ScheduleIcon,
   MonetizationOn as MoneyIcon,
-  Apartment as ApartmentIcon,
   AccountBalance as BankIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
