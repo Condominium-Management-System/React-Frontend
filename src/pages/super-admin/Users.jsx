@@ -1,5 +1,6 @@
 // src/pages/super-admin/Users.jsx
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../../api/axiosConfig';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -77,7 +78,7 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   },
 }));
 
-const StatsCard = styled(Card)(({ theme, color, active }) => ({
+const StatsCard = styled(Card, { shouldForwardProp: (prop) => prop !== 'active' && prop !== 'color' })(({ theme, color, active }) => ({
   borderRadius: '16px',
   boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
   border: `1px solid ${active ? color : 'rgba(0,0,0,0.04)'}`,
@@ -139,11 +140,14 @@ const RoleChip = styled(Chip)(({ theme, role }) => ({
 }));
 
 const Users = () => {
+  const [searchParams] = useSearchParams();
+  const initialFilter = searchParams.get('filter')?.toUpperCase() || (searchParams.get('role') ? searchParams.get('role').toUpperCase() : 'ALL');
+
   // State
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('ALL');
+  const [filterType, setFilterType] = useState(initialFilter);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [stats, setStats] = useState({
@@ -156,6 +160,13 @@ const Users = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [viewingUser, setViewingUser] = useState(null);
+
+  useEffect(() => {
+    const qFilter = searchParams.get('filter')?.toUpperCase() || (searchParams.get('role') ? searchParams.get('role').toUpperCase() : null);
+    if (qFilter) {
+      setFilterType(qFilter);
+    }
+  }, [searchParams]);
 
   // Fetch users
   const fetchUsers = async () => {
@@ -197,7 +208,11 @@ const Users = () => {
       (filterType === 'VERIFIED' && user.isVerified) ||
       (filterType === 'PENDING' && !user.isVerified) ||
       (filterType === 'ADMINS' &&
-        (user.role === 'super_admin' || user.role === 'condo_admin'));
+        (user.role === 'super_admin' || user.role === 'condo_admin')) ||
+      (filterType === 'CONDO_ADMIN' && user.role === 'condo_admin') ||
+      (filterType === 'SUPER_ADMIN' && user.role === 'super_admin') ||
+      (filterType === 'RESIDENTS' && user.role === 'resident') ||
+      (filterType === 'RESIDENT' && user.role === 'resident');
 
     return matchesSearch && matchesFilter;
   });
@@ -655,7 +670,7 @@ const Users = () => {
       />
 
       {/* User Details Dialog */}
-      <Dialog
+      <Dialog disableRestoreFocus 
         open={Boolean(viewingUser)}
         onClose={() => setViewingUser(null)}
         maxWidth="sm"
