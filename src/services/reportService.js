@@ -15,7 +15,7 @@ export const reportService = {
             // Get reports for this condo
             const reportsRes = await api.reports.getAdminAll({ 
               condoId: condo.id,
-              limit: 1000 // Get all reports
+              limit: 100 // Get all reports
             });
             const reports = reportsRes.data.data?.items || [];
             
@@ -117,6 +117,49 @@ export const reportService = {
       return response.data.data;
     } catch (error) {
       console.error('Error adding response:', error);
+      throw error;
+    }
+  },
+  // Resident - Create a new report
+  createReport: async (data) => {
+    try {
+      const response = await api.reports.create(data);
+      return response.data.data;
+    } catch (error) {
+      console.error('Error creating report:', error);
+      throw error;
+    }
+  },
+
+  // Resident - Get own submitted reports
+  getMyReports: async () => {
+    try {
+      const response = await api.reports.getMy();
+      return response.data.data;
+    } catch (error) {
+      console.error('Error fetching my reports:', error);
+      throw error;
+    }
+  },
+
+  // Resident / Admin - Delete or withdraw report
+  deleteReport: async (reportId) => {
+    try {
+      const response = await api.reports.delete(reportId);
+      return response.data.data;
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      throw error;
+    }
+  },
+
+  // Resident / Admin - Update report details
+  updateReport: async (reportId, data) => {
+    try {
+      const response = await api.reports.update(reportId, data);
+      return response.data.data;
+    } catch (error) {
+      console.error('Error updating report:', error);
       throw error;
     }
   },
